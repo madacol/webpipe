@@ -1,0 +1,19 @@
+{
+    "description": "Terminal pipes in the web",
+    "manifest_version": 2,
+    "name": "webpipe",
+    "version": "0.0.1",
+
+    "background": {
+        "scripts": ["background.js"]
+    },
+    "browser_action": {
+        "default_icon": {
+            "16": "icons/page-16.png",
+            "32": "icons/page-32.png"
+        }
+    },
+    "permissions": [
+        "<all_urls>", "activeTab", "tabs"
+    ]
+}

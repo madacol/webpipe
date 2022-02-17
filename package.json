@@ -1,0 +1,18 @@
+{
+  "name": "webpipe",
+  "version": "0.1.0",
+  "description": "Terminal pipes in the web",
+  "main": "background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "pipe",
+    "web"
+  ],
+  "author": "madacol",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chrome": "^0.0.178"
+  }
+}
