@@ -7,6 +7,17 @@
     "background": {
         "scripts": ["background.js"]
     },
+    "content_scripts": [
+      {
+        "matches": ["*://*/*"],
+        "js": ["content.js"]
+      }
+    ],
+    "web_accessible_resources": [
+        "observer.js",
+        "attach.js",
+        "element-picker.js"
+    ],
     "browser_action": {
         "default_icon": {
             "16": "icons/page-16.png",

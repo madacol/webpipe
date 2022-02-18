@@ -1,8 +1,6 @@
 const observers = {}
-function updateObserver(tabId, {idx, textContent}) {
-    /**
-     * Tab's first observer's update
-     */
+function registerObserver(tabId, {idx, textContent}) {
+    // Tab's first observer
     if (!observers[tabId]) {
         observers[tabId] = {
             [idx]: {
@@ -12,9 +10,7 @@ function updateObserver(tabId, {idx, textContent}) {
         }
         return
     }
-    /**
-     * Tab's succesive new observer's update
-     */
+    // Tab's succesive new observer
     if (!observers[tabId][idx]) {
         observers[tabId][idx] = {
             textContent,
@@ -22,41 +18,58 @@ function updateObserver(tabId, {idx, textContent}) {
         }
         return
     }
-
-    /**
-     * Update existing observer
-     */
+}
+function updateObserver(tabId, {idx, textContent}) {
+    // Update existing observer
     observers[tabId][idx].textContent = textContent
+
+    //TODO: send updates to inputs
     
     console.log(observers[tabId][idx]);
 }
-
-function attachInput(TabId, {inputData, observerData}) {
-    const observer = observers[observerData.tabId][observerData.idx]
-    observer.pipes.push({...inputData, TabId})
+async function sendPayloadToActiveTab(payload) {
+    const tabs = await browser.tabs.query({ currentWindow: true, active: true })
+    browser.tabs.sendMessage(tabs[0].id, payload)
+}
+function sendAttachSignal() {
+    sendPayloadToActiveTab({action: "attachMode"})
 }
 
-function getPipeList(TabId, {inputData, observerData}) {
-}
+// function attachInput(TabId, {inputData, observerData}) {
+//     const observer = observers[observerData.tabId][observerData.idx]
+//     observer.pipes.push({...inputData, TabId})
+// }
 
-browser.browserAction.onClicked.addListener(tab=>browser.tabs.executeScript(null, {file: `/observer.js`}));
+// function getPipeList(TabId, {inputData, observerData}) {
+// }
+
+/**
+ * Button Action
+ */
+browser.browserAction.onClicked.addListener(async ()=>{
+    sendPayloadToActiveTab({action: "observeMode"})
+});
 
 browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
-    if (!sender.tab)    // Check if a tab is the one sending a message and not the extension
+    if (!sender.tab) {    // Check if a tab is the one sending a message and not the extension
         return sendResponse(null) // failed
-
-    switch (payload.type) {
+    }
+    switch (payload.action) {
         /**
          * Observe messages
          */
-        case "observe":
+        case "create":
+            registerObserver(sender.tab.id, payload)
+            browser.browserAction.onActivated.addListener(sendAttachSignal)
+            break;
+        case "update":
             updateObserver(sender.tab.id, payload)
             break;
         
         /**
          * Input messages
          */
-        case "pipe":
+        case "attach":
             attachInput(sender.tab.id, payload)
             break;
         case "request_pipe_list":
@@ -65,7 +78,7 @@ browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
 
     
         default:
-            console.warn(`message.type: "${payload.type}" unknown`);
+            console.warn(`message.action: "${payload.action}" unknown`);
             break;
     }
 })

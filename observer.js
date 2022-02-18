@@ -1,50 +1,42 @@
-/**
- * Observers logic
- */
-{
-    const observers = []
-    function observeNode(e) {
-        const node = e.target
+const observers = []
+function removeObserver(observer, idx) {
+    observer.disconnect()
+    observers.splice(idx, 1) // remove observer
+}
+function observeNode(node) {
+    const idx = observers.push(null) - 1
+    const payload = {
+        action: "create",
+        idx,
+        textContent: node.textContent
+    }
+    browser.runtime.sendMessage(payload, response =>{
+        if (response) {
+            // Failed
+            observer.disconnect()
+            observers.splice(idx, 1) // remove observer
+            return
+        }
+        // Success
         const observer = new MutationObserver(function (mutationsList, observer) {
             const payload = {
-                type: "observe",
-                idx: observers.indexOf(observer),
+                action: "update",
+                idx,
                 textContent: node.textContent
             }
-            console.log(payload);
             browser.runtime.sendMessage(payload, response =>{
                 if (!response) return // Success
                 // Failed
-                observer.disconnect()
-                observers.splice(payload.idx, 1) // remove observer
+                removeObserver(observer, idx)
             })
         })
-        observer.observe(node, { attributes: true, childList: true, subtree: true, characterData: true })
-        observers.push(observer)
-        document.body.removeEventListener("click", observeNode)
-    }
-    document.body.addEventListener("click", observeNode)
+        observer.observe(node, { childList: true, subtree: true, characterData: true })
+        observers[idx] = {observer, node}
+    })
 }
 
-/**
- * Add class .pipehover on hover to all elements
- */
-{
-    for (const element of document.getElementsByTagName("*")) {
-        element.addEventListener("mouseover", e=>{e.currentTarget.classList.add("pipehover"); e.stopPropagation()})
-        element.addEventListener("mouseout", e=>e.currentTarget.classList.remove("pipehover"))
-    }
-}
 
-/**
- * Add CSS for .pipehover
- */
-{
-    const styleSheet = document.createElement("style")
-    styleSheet.innerText = `
-        .pipehover {
-            border: 5px solid red !important
-        }
-    `
-    document.head.appendChild(styleSheet)
+export default async function observe() {
+    (await import(browser.runtime.getURL("element-picker.js"))) // Injects `elementPicker` into `window`
+    window.elementPicker.init({onClick: observeNode, backgroundColor: "#00bbff69"})
 }
