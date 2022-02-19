@@ -23,31 +23,44 @@ function updateObserver(tabId, {idx, textContent}) {
     // Update existing observer
     observers[tabId][idx].textContent = textContent
 
-    //TODO: send updates to inputs
+    //send updates to inputs
+    observers[tabId][idx].pipes.forEach(({idx, tabId}) => {
+        const payload = {
+            action: "update",
+            textContent,
+            idx
+        }
+        browser.tabs.sendMessage(tabId, payload)
+    });
     
     console.log(observers[tabId][idx]);
 }
-async function sendPayloadToActiveTab(payload) {
+async function sendToActiveTab(payload) {
     const tabs = await browser.tabs.query({ currentWindow: true, active: true })
     browser.tabs.sendMessage(tabs[0].id, payload)
 }
-function sendAttachSignal() {
-    sendPayloadToActiveTab({action: "attachMode"})
+
+function attachInput(tabId, {idx, observer: observerData}) {
+    const observer = observers[observerData.tabId][observerData.idx]
+    observer.pipes.push({idx, tabId})
 }
 
-// function attachInput(TabId, {inputData, observerData}) {
-//     const observer = observers[observerData.tabId][observerData.idx]
-//     observer.pipes.push({...inputData, TabId})
+// function getPipeList(tabId, {inputData, observerData}) {
 // }
-
-// function getPipeList(TabId, {inputData, observerData}) {
-// }
+function sendAttachSignal(observer) {
+    sendToActiveTab({
+        action: "attachMode",
+        observers,
+        observer
+    })
+}
+let attachingObserver
 
 /**
  * Button Action
  */
 browser.browserAction.onClicked.addListener(async ()=>{
-    sendPayloadToActiveTab({action: "observeMode"})
+    sendToActiveTab({action: "observeMode"})
 });
 
 browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
@@ -60,21 +73,28 @@ browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
          */
         case "create":
             registerObserver(sender.tab.id, payload)
-            browser.browserAction.onActivated.addListener(sendAttachSignal)
+            const observer = {
+                idx: payload.idx,
+                textContent: payload.textContent,
+                tabId: sender.tab.id
+            }
+            attachingObserver = () => sendAttachSignal(observer)
+            browser.tabs.onActivated.addListener(attachingObserver)
             break;
         case "update":
             updateObserver(sender.tab.id, payload)
             break;
-        
+
         /**
          * Input messages
          */
         case "attach":
             attachInput(sender.tab.id, payload)
+            browser.browserAction.onActivated.removeListener(attachingObserver)
             break;
-        case "request_pipe_list":
-            sendResponse(getPipeList())
-            break;
+        // case "request_pipe_list":
+        //     sendResponse(getPipeList())
+        //     break;
 
     
         default:

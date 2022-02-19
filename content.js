@@ -1,5 +1,5 @@
 
-let observe, attach
+let observe, attacher
 
 browser.runtime.onMessage.addListener(async payload => {
 
@@ -11,8 +11,13 @@ browser.runtime.onMessage.addListener(async payload => {
             break;
 
         case "attachMode":
-            // attach = attach || (await import(browser.runtime.getURL("attach.js"))).default
-            // attach()
+            attacher = attacher || (await import(browser.runtime.getURL("attacher.js")))
+            attacher.attach(payload)
+            break;
+
+        case "update":
+            attacher = attacher || (await import(browser.runtime.getURL("attacher.js")))
+            attacher.update(payload)
             break;
 
 
