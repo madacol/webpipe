@@ -57,8 +57,8 @@
 
   function reset() {
 
-    document.removeEventListener('click', onMouseClick, false);
-    document.removeEventListener('mousemove', onMouseMove, false);
+    document.removeEventListener('click', onMouseClick, true);
+    document.removeEventListener('mousemove', onMouseMove, true);
     document.body.style.cursor = 'auto';
     if (oldTarget) {
       resetOldTargetColor();
@@ -80,8 +80,8 @@
     }
     desiredBackgroundColor = options.backgroundColor || desiredBackgroundColor
     onClick = options.onClick;
-    document.addEventListener('click', onMouseClick, false);
-    document.addEventListener('mousemove', onMouseMove, false);
+    document.addEventListener('click', onMouseClick, true);
+    document.addEventListener('mousemove', onMouseMove, true);
 
     return elementPicker;
 
