@@ -26,3 +26,5 @@ browser.runtime.onMessage.addListener(async payload => {
             break;
     }
 })
+window.addEventListener("visibilitychange", event => event.stopImmediatePropagation(), true);
+window.addEventListener("webkitvisibilitychange", event => event.stopImmediatePropagation(), true);
