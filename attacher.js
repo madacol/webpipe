@@ -8,7 +8,7 @@ function selectNodeText(node) {
     selection.addRange(range);
 }
 
-export async function update({textContent, idx}) {
+export function update({textContent, idx}) {
     const node = elementsAttached[idx]
     node.value = textContent
 

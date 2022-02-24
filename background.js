@@ -32,8 +32,6 @@ function updateObserver(tabId, {idx, textContent}) {
         }
         browser.tabs.sendMessage(tabId, payload)
     });
-    
-    console.log(observers[tabId][idx]);
 }
 async function sendToActiveTab(payload) {
     const tabs = await browser.tabs.query({ currentWindow: true, active: true })
