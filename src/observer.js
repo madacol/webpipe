@@ -1,27 +1,35 @@
+import getCssSelector from "css-selector-generator";
 import elementPicker from "./element-picker"
 
 const observers = []
 
-function observeNode(node) {
-    const idx = observers.push({node}) - 1
-    const payload = {
+export default async function observe() {
+    const node = await elementPicker("#00bbff70")
+    const cssSelector = getCssSelector(node)
+    console.log(cssSelector);
+    const idx = observers.push({cssSelector, node}) - 1
+    const createPayload = {
         action: "create",
         idx,
         textContent: (node.value || node.textContent)
     }
     function sendUpdate(text) {
-        const payload = {
+        const updatePayload = {
             action: "update",
             idx,
             textContent: text
         }
-        browser.runtime.sendMessage(payload)
+        browser.runtime.sendMessage(updatePayload)
     }
-    if (node.tagName === "INPUT" || node.tagName === "TEXTAREA") {
-        browser.runtime.sendMessage(payload, ()=>{
+    const updateHandler = (node.tagName === "INPUT" || node.tagName === "TEXTAREA") ?
+        ()=>{
             /**
              * There's no clean way to detect an `input.value` change from an extension =/
              * https://stackoverflow.com/questions/32383349/detect-input-value-change-with-mutationobserver
+             * 
+             * UPDATE: I now think it's possible, we can append a <script> to <head> and it will run in page's context,
+             * we could define a getter/setter property so when `value` is set it fires a `change` event,
+             * and now we can listen to that event from this side
              */
             let oldValue = node.value
             setInterval(()=>{
@@ -30,16 +38,13 @@ function observeNode(node) {
                 sendUpdate(node.value)
                 oldValue = node.value
             }, 100)
-        })
-    } else {
-        browser.runtime.sendMessage(payload, () => {
+        }
+    :
+        () => {
             const observer = new MutationObserver(()=>sendUpdate(node.textContent))
             observer.observe(node, { childList: true, subtree: true, characterData: true })
             observers[idx].observer = observer
-        })
-    }
-}
+        }
 
-export default function observe() {
-    elementPicker(observeNode, "#00bbff70")
+    browser.runtime.sendMessage(createPayload, updateHandler)
 }

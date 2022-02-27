@@ -1,4 +1,6 @@
 import { chromeExtension, simpleReloader } from 'rollup-plugin-chrome-extension'
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs'
 
 export default {
   input: 'src/manifest.json',
@@ -10,6 +12,7 @@ export default {
     // always put chromeExtension() before other plugins
     chromeExtension(),
     simpleReloader(),
-    // the plugins below are optional
+    resolve(),
+    commonjs()
   ],
 }

@@ -1,3 +1,4 @@
+import { elementPickerConstroller } from "./element-picker";
 
 let observe, attacher
 
@@ -26,5 +27,7 @@ browser.runtime.onMessage.addListener(async payload => {
             break;
     }
 })
-window.addEventListener("visibilitychange", event => event.stopImmediatePropagation(), true);
-window.addEventListener("webkitvisibilitychange", event => event.stopImmediatePropagation(), true);
+window.addEventListener("visibilitychange", event => {
+    event.stopImmediatePropagation()
+    if (document.visibilityState === 'hidden') elementPickerConstroller.abort()
+}, true);

@@ -1,54 +1,56 @@
+export let pickingPromise;
+export let elementPickerConstroller;
 
-let oldTarget;
-let backgroundColor = 'rgba(0, 0, 0, 0.1)';
-let oldBackgroundColor;
-let onClick;
-
-function colorBackground(event) {
-    const target = event.target
-    oldTarget && (oldTarget.style.backgroundColor = oldBackgroundColor)
-    oldTarget = target;
-    oldBackgroundColor = target.style.backgroundColor;
-    target.style.backgroundColor = backgroundColor;
-}
-
-function onMouseClick(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    reset();
-    onClick(event.target);
-}
-
-function cancel(event) {
-    if (event.key === "Escape") {
-        event.preventDefault();
-        event.stopPropagation();
-        reset()
-    }
-}
-
-function reset() {
-    document.removeEventListener('click', onMouseClick, true);
-    document.removeEventListener('mousemove', colorBackground, true);
-    document.removeEventListener('keyup', cancel, true);
-    document.body.style.cursor = 'auto';
-    oldTarget && (oldTarget.style.backgroundColor = oldBackgroundColor)
-    oldTarget = null;
-    oldBackgroundColor = null;
-}
 /**
+ * Allows to pick an element in the visible DOM and returns it
  * 
  * @param {Function} _onClick handler that will be invoked with the node chosen as parameter
  * @param {String} backgroundColor css color string
+ * @returns {Promise<Node>} element picked
  */
-export default function elementPicker(_onClick, _backgroundColor = backgroundColor) {
-    if (!_onClick) {
-        console.error('_onClick needs to be specified.');
-        return;
-    }
-    onClick = _onClick
-    backgroundColor = _backgroundColor
-    document.addEventListener('click', onMouseClick, true);
-    document.addEventListener('mousemove', colorBackground, true);
-    document.addEventListener('keyup', cancel, true);
+export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
+    elementPickerConstroller?.abort();
+    return pickingPromise = new Promise( (resolve, reject) => {
+        let oldBackgroundColor;
+        let oldTarget;
+        elementPickerConstroller = new AbortController()
+
+        function reset(reason) {
+            elementPickerConstroller.abort(reason)
+            document.body.style.cursor = 'auto';
+            oldTarget.style.backgroundColor = oldBackgroundColor
+        }
+
+        const signal = elementPickerConstroller.signal
+
+        // return target node
+        document.addEventListener('click', (event)=>{
+            event.preventDefault();
+            event.stopPropagation();
+            reset("element picked")
+            resolve(event.target)
+        }, {capture: true, signal});
+
+        // set backgroundColor to element directly above pointer
+        document.addEventListener('mouseover', ({target})=>{
+            oldTarget = target;
+            oldBackgroundColor = target.style.backgroundColor;
+            target.style.backgroundColor = backgroundColor;
+        }, {capture: true, signal});
+
+        // restore original color (if any)
+        document.addEventListener('mouseout', ({target})=>{
+            target.style.backgroundColor = oldBackgroundColor
+        }, {capture: true, signal});
+
+        // cancel picking element
+        document.addEventListener('keyup', (event)=>{
+            if (event.key === "Escape") {
+                event.preventDefault();
+                event.stopPropagation();
+                reset("cancelled")
+                reject("picking element cancelled")
+            }
+        }, {capture: true, signal});
+    })
 }

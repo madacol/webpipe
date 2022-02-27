@@ -1,4 +1,6 @@
-import elementPicker from "./element-picker";
+import getCssSelector from "css-selector-generator";
+import elementPicker, { elementPickerConstroller, pickingPromise } from "./element-picker";
+import { getNodeFromSelector } from "./utils";
 
 const elementsAttached = []
 
@@ -10,8 +12,26 @@ function selectNodeText(node) {
     selection.addRange(range);
 }
 
-export function update({textContent, idx}) {
-    const node = elementsAttached[idx]
+export async function update({textContent, idx}) {
+
+    /**
+     * If an element is being picked, pause update until picking is finished
+     * otherwise update dispatches a click event that will cause the wrong element to be selected
+     */
+    await pickingPromise;
+
+
+    let node;
+    {
+        const {cssSelector, node: savedNode} = elementsAttached[idx]
+
+        // If savedNode is still inserted in the DOM, use it, otherwise find it with the selector
+        node = document.contains(savedNode)
+            ? savedNode
+            : getNodeFromSelector(cssSelector)
+
+        if (!node) return console.error(`Couldn't find node with the selector: ${cssSelector}`)
+    }
     node.value = textContent
 
     /**
@@ -20,6 +40,9 @@ export function update({textContent, idx}) {
      * 
      * https://github.com/facebook/draft-js/issues/616
      */
+    console.log(node);
+    node.click()
+    // node.dispatchEvent(new MouseEvent("click"))
     node.dispatchEvent(new KeyboardEvent("keyup"))
     node.dispatchEvent(new KeyboardEvent("keypress"))
     node.dispatchEvent(new KeyboardEvent("keydown"))
@@ -30,6 +53,7 @@ export function update({textContent, idx}) {
         "paste",
         {dataType: "text/plain", data: textContent}
     )) // https://github.com/facebook/draft-js/issues/616#issuecomment-426047799
+
     if (node.isContentEditable) {
         /**
          * First let me send a compassionate message full of love to all poor souls
@@ -50,16 +74,16 @@ export function update({textContent, idx}) {
     }
 }
 
-export function attach({observer}) {
-    function attachPipe(node) {
-        const idx = elementsAttached.push(node) - 1
-        update({textContent: observer.textContent, idx})
-        const payload = {
-            action: "attach",
-            idx,
-            observer
-        }
-        browser.runtime.sendMessage(payload)
+export async function attach({observer}) {
+    const node = await elementPicker("#ffbb0070")
+    const cssSelector = getCssSelector(node)
+    console.log(cssSelector);
+    const idx = elementsAttached.push({cssSelector, node}) - 1
+    const payload = {
+        action: "attach",
+        idx,
+        observer
     }
-    elementPicker(attachPipe, "#ffbb0070")
+    browser.runtime.sendMessage(payload)
+    update({textContent: observer.textContent, idx})
 }
