@@ -1,72 +1,54 @@
 
-if (typeof window === 'undefined' || !window.document) {
-  console.error('elementPicker requires the window and document.');
-}
-
 let oldTarget;
-let desiredBackgroundColor = 'rgba(0, 0, 0, 0.1)';
+let backgroundColor = 'rgba(0, 0, 0, 0.1)';
 let oldBackgroundColor;
 let onClick;
 
-function onMouseMove(event) {
-
-  event      = event || window.event;
-  var target = event.target || event.srcElement;
-  if (oldTarget) {
-    resetOldTargetColor();
-  }
-  else {
-    document.body.style.cursor = 'pointer';
-  }
-  oldTarget = target;
-  oldBackgroundColor = target.style.backgroundColor;
-  target.style.backgroundColor = desiredBackgroundColor;
-
+function colorBackground(event) {
+    const target = event.target
+    oldTarget && (oldTarget.style.backgroundColor = oldBackgroundColor)
+    oldTarget = target;
+    oldBackgroundColor = target.style.backgroundColor;
+    target.style.backgroundColor = backgroundColor;
 }
 
 function onMouseClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    reset();
+    onClick(event.target);
+}
 
-  event      = event || window.event;
-  var target = event.target || event.srcElement;
-  if (event.preventDefault) event.preventDefault();
-  if (event.stopPropagation) event.stopPropagation();
-  reset();
-  onClick(target);
-  return false
-
+function cancel(event) {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        reset()
+    }
 }
 
 function reset() {
-
-  document.removeEventListener('click', onMouseClick, true);
-  document.removeEventListener('mousemove', onMouseMove, true);
-  document.body.style.cursor = 'auto';
-  if (oldTarget) {
-    resetOldTargetColor();
-  }
-  oldTarget = null;
-  oldBackgroundColor = null;
-
+    document.removeEventListener('click', onMouseClick, true);
+    document.removeEventListener('mousemove', colorBackground, true);
+    document.removeEventListener('keyup', cancel, true);
+    document.body.style.cursor = 'auto';
+    oldTarget && (oldTarget.style.backgroundColor = oldBackgroundColor)
+    oldTarget = null;
+    oldBackgroundColor = null;
 }
-
-function resetOldTargetColor() {
-  oldTarget.style.backgroundColor = oldBackgroundColor
-}
-
 /**
  * 
- * @param {Function} _onClick handler that will be passed the node that was clicked as first parameter
+ * @param {Function} _onClick handler that will be invoked with the node chosen as parameter
  * @param {String} backgroundColor css color string
  */
-export default function elementPicker(_onClick, backgroundColor = desiredBackgroundColor) {
-
-  if (!_onClick) {
-    console.error('onClick needs to be specified.');
-    return;
-  }
-  onClick = _onClick;
-  desiredBackgroundColor = backgroundColor
-  document.addEventListener('click', onMouseClick, true);
-  document.addEventListener('mousemove', onMouseMove, true);
-
+export default function elementPicker(_onClick, _backgroundColor = backgroundColor) {
+    if (!_onClick) {
+        console.error('_onClick needs to be specified.');
+        return;
+    }
+    onClick = _onClick
+    backgroundColor = _backgroundColor
+    document.addEventListener('click', onMouseClick, true);
+    document.addEventListener('mousemove', colorBackground, true);
+    document.addEventListener('keyup', cancel, true);
 }
