@@ -15,8 +15,7 @@
     ],
     "web_accessible_resources": [
         "observer.js",
-        "attacher.js",
-        "element-picker.js"
+        "attacher.js"
     ],
     "browser_action": {
         "default_icon": {

@@ -1,3 +1,5 @@
+import elementPicker from "./element-picker"
+
 const observers = []
 
 function observeNode(node) {
@@ -38,7 +40,6 @@ function observeNode(node) {
     }
 }
 
-export default async function observe() {
-    (await import(browser.runtime.getURL("element-picker.js"))) // Injects `elementPicker` into `window`
-    window.elementPicker.init({onClick: observeNode, backgroundColor: "#00bbff70"})
+export default function observe() {
+    elementPicker(observeNode, "#00bbff70")
 }

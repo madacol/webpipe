@@ -94,7 +94,6 @@ browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
         //     sendResponse(getPipeList())
         //     break;
 
-    
         default:
             console.warn(`message.action: "${payload.action}" unknown`);
             break;

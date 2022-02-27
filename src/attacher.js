@@ -1,3 +1,5 @@
+import elementPicker from "./element-picker";
+
 const elementsAttached = []
 
 function selectNodeText(node) {
@@ -48,7 +50,7 @@ export function update({textContent, idx}) {
     }
 }
 
-export async function attach({observer}) {
+export function attach({observer}) {
     function attachPipe(node) {
         const idx = elementsAttached.push(node) - 1
         update({textContent: observer.textContent, idx})
@@ -59,6 +61,5 @@ export async function attach({observer}) {
         }
         browser.runtime.sendMessage(payload)
     }
-    (await import(browser.runtime.getURL("element-picker.js"))) // Injects `elementPicker` into `window`
-    window.elementPicker.init({onClick: attachPipe, backgroundColor: "#ffbb0070"})
+    elementPicker(attachPipe, "#ffbb0070")
 }

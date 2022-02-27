@@ -4,6 +4,8 @@
   "description": "Terminal pipes in the web",
   "main": "background.js",
   "scripts": {
+    "build": "rollup -c",
+    "start": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -13,6 +15,9 @@
   "author": "madacol",
   "license": "MIT",
   "devDependencies": {
-    "@types/chrome": "^0.0.178"
+    "@types/chrome": "^0.0.178",
+    "@types/firefox-webext-browser": "^94.0.1",
+    "rollup": "^2.68.0",
+    "rollup-plugin-chrome-extension": "^3.6.7"
   }
 }
