@@ -18,7 +18,9 @@ export async function update({textContent, idx}) {
      * If an element is being picked, pause update until picking is finished
      * otherwise update dispatches a click event that will cause the wrong element to be selected
      */
-    await pickingPromise;
+    try {
+        await pickingPromise;
+    } catch (error) {}
 
 
     let node;
