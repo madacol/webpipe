@@ -90,7 +90,7 @@ browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
          */
         case "attach":
             attachInput(sender.tab.id, payload)
-            browser.browserAction.onActivated.removeListener(attachingObserver)
+            browser.tabs.onActivated.removeListener(attachingObserver)
             break;
         // case "request_pipe_list":
         //     sendResponse(getPipeList())
