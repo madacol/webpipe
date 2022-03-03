@@ -15,14 +15,20 @@
   "author": "madacol",
   "license": "MIT",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^21.0.2",
-    "@rollup/plugin-node-resolve": "^13.1.3",
     "@types/chrome": "^0.0.178",
-    "@types/firefox-webext-browser": "^94.0.1",
-    "rollup": "^2.68.0",
-    "rollup-plugin-chrome-extension": "^3.6.7"
+    "@types/firefox-webext-browser": "^94.0.1"
   },
   "dependencies": {
-    "css-selector-generator": "^3.6.0"
+    "css-selector-generator": "^3.6.0",
+    "@rollup/plugin-commonjs": "^21.0.2",
+    "@rollup/plugin-node-resolve": "^13.1.3",
+    "rollup": "^2.68.0",
+    "rollup-plugin-chrome-extension": "^3.6.7",
+    "rollup-plugin-css-only": "^3.1.0",
+    "rollup-plugin-empty-dir": "^1.0.5",
+    "rollup-plugin-svelte": "^7.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-zip": "^1.0.3",
+    "svelte": "^3.46.4"
   }
 }

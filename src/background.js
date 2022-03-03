@@ -1,4 +1,5 @@
 const observers = {}
+import { sendToActiveTab } from "./utils"
 function registerObserver(tabId, {idx, textContent}) {
     // Tab's first observer
     if (!observers[tabId]) {
@@ -11,12 +12,11 @@ function registerObserver(tabId, {idx, textContent}) {
         return
     }
     // Tab's succesive new observer
-    if (!observers[tabId][idx]) {
-        observers[tabId][idx] = {
-            textContent,
-            pipes: []
-        }
-        return
+    if (observers[tabId][idx]) return console.error(`observer ${tabId}-${idx} already exist`);
+
+    observers[tabId][idx] = {
+        textContent,
+        pipes: []
     }
 }
 function updateObserver(tabId, {idx, textContent}) {
@@ -32,10 +32,6 @@ function updateObserver(tabId, {idx, textContent}) {
         }
         browser.tabs.sendMessage(tabId, payload)
     });
-}
-async function sendToActiveTab(payload) {
-    const tabs = await browser.tabs.query({ currentWindow: true, active: true })
-    browser.tabs.sendMessage(tabs[0].id, payload)
 }
 
 function attachInput(tabId, {idx, observer: observerData}) {
@@ -63,6 +59,7 @@ browser.browserAction.onClicked.addListener(async ()=>{
 
 browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
     if (!sender.tab) {    // Check if a tab is the one sending a message and not the extension
+        console.warn("ignored", payload, sender)
         return sendResponse(null) // failed
     }
     switch (payload.action) {
