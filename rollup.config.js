@@ -1,6 +1,5 @@
 import { chromeExtension, simpleReloader } from "rollup-plugin-chrome-extension";
 import svelte from "rollup-plugin-svelte";
-import css from 'rollup-plugin-css-only';
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import { emptyDir } from "rollup-plugin-empty-dir";
@@ -24,8 +23,8 @@ export default {
         // enable run-time checks when not in production
         dev: !production,
       },
+      emitCss: false,
     }),
-    css({ output: 'bundle.css' }),
     resolve({
       dedupe: ["svelte"],
     }),

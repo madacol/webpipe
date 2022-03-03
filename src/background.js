@@ -1,4 +1,8 @@
 const observers = {}
+
+// make a reference in `window` to share with popup
+window.observers = observers
+
 import { sendToActiveTab } from "./utils"
 function registerObserver(tabId, {idx, textContent}) {
     // Tab's first observer
@@ -31,6 +35,7 @@ function updateObserver(tabId, {idx, textContent}) {
             idx
         }
         browser.tabs.sendMessage(tabId, payload)
+        browser.runtime.sendMessage(payload)
     });
 }
 
