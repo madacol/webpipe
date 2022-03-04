@@ -1,10 +1,10 @@
+/** @type {Promise<Node>} */
 export let pickingPromise;
 export let elementPickerConstroller;
 
 /**
  * Allows to pick an element in the visible DOM and returns it
  * 
- * @param {Function} _onClick handler that will be invoked with the node chosen as parameter
  * @param {String} backgroundColor css color string
  * @returns {Promise<Node>} element picked
  */

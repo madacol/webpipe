@@ -1,3 +1,41 @@
+/**
+ * Possible attributes of an observer
+ * @typedef {{
+ *   idx: number,
+ *   textContent: string,
+ *   cssSelector: string,
+ *   tab: {
+ *     id: number,
+ *     url: string,
+ *     title: string
+ *   },
+ *   pipes: [{
+ *     idx: number,
+ *     tabId: number,
+ *     cssSelector: string
+ *   }]
+ * }} Observer
+ * 
+ * 
+ * @typedef {Object.<string, {
+ *   idx: number,
+ *   textContent: string,
+ *   cssSelector: string,
+ *   tab: {
+ *     id: number,
+ *     url: string,
+ *     title: string
+ *   },
+ *   pipes: [{
+ *     idx: number,
+ *     tabId: number,
+ *     cssSelector: string
+ *   }]
+ * }>} Observers
+ * 
+ * 
+ * @type {Observers}
+ * */
 const observers = {}
 
 // make a reference in `window` to share with popup

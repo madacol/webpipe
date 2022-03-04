@@ -9,6 +9,11 @@ export async function sendToActiveTab(payload) {
     browser.tabs.sendMessage(tabs[0].id, payload)
 }
 
+/**
+ * @typedef {import('./background').Observer} Observer
+ * 
+ * @param {Observer} observer 
+ */
 export async function sendAttachSignal(observer) {
     await sendToActiveTab({
         action: "attachMode",

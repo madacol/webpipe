@@ -1,6 +1,11 @@
 <script>
     import { sendToActiveTab } from "../utils"
 
+    /**
+     * @typedef {import('../background').Observers} Observers
+     * 
+     * @type {Observers}
+     */
     let observers;
 
     // set `observers` from background.js context
