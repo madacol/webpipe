@@ -8,3 +8,10 @@ export async function sendToActiveTab(payload) {
     const tabs = await browser.tabs.query({ currentWindow: true, active: true })
     browser.tabs.sendMessage(tabs[0].id, payload)
 }
+
+export async function sendAttachSignal(observer) {
+    await sendToActiveTab({
+        action: "attachMode",
+        observer
+    })
+}

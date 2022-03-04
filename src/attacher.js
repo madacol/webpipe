@@ -83,8 +83,11 @@ export async function attach({observer}) {
     const idx = elementsAttached.push({cssSelector, node}) - 1
     const payload = {
         action: "attach",
-        idx,
-        observer
+        observer,
+        attach: {
+            idx,
+            cssSelector
+        },
     }
     browser.runtime.sendMessage(payload)
     update({textContent: observer.textContent, idx})

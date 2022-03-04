@@ -10,14 +10,20 @@ export default async function observe() {
     const idx = observers.push({cssSelector, node}) - 1
     const createPayload = {
         action: "create",
-        idx,
-        textContent: (node.value || node.textContent)
+        observer: {
+            idx,
+            textContent: (node.value || node.textContent),
+            cssSelector
+        }
     }
     function sendUpdate(text) {
         const updatePayload = {
             action: "update",
-            idx,
-            textContent: text
+            observer: {
+                idx,
+                textContent: text,
+                cssSelector
+            }
         }
         browser.runtime.sendMessage(updatePayload)
     }

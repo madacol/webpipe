@@ -4,55 +4,43 @@ const observers = {}
 window.observers = observers
 
 import { sendToActiveTab } from "./utils"
-function registerObserver(tabId, {idx, textContent}) {
-    // Tab's first observer
-    if (!observers[tabId]) {
-        observers[tabId] = {
-            [idx]: {
-                textContent,
-                pipes: []
-            }
-        }
-        return
-    }
-    // Tab's succesive new observer
-    if (observers[tabId][idx]) return console.error(`observer ${tabId}-${idx} already exist`);
+function registerObserver(observer) {
+    const id = `${observer.tab.id}_${observer.idx}`
 
-    observers[tabId][idx] = {
-        textContent,
+    if (observers[id]) return console.error(`observer ${id} already exist`);
+
+    observers[id] = {
+        ...observer,
         pipes: []
     }
 }
-function updateObserver(tabId, {idx, textContent}) {
+function updateObserver(observer) {
+    const id = `${observer.tab.id}_${observer.idx}`
+
     // Update existing observer
-    observers[tabId][idx].textContent = textContent
+    observers[id].textContent = observer.textContent
 
     //send updates to inputs
-    observers[tabId][idx].pipes.forEach(({idx, tabId}) => {
+    observers[id].pipes.forEach(({idx, tabId}) => {
         const payload = {
             action: "update",
-            textContent,
+            textContent: observer.textContent,
             idx
         }
         browser.tabs.sendMessage(tabId, payload)
-        browser.runtime.sendMessage(payload)
     });
-}
+    // send update signal to popup
+    browser.runtime.sendMessage(payload)
 
-function attachInput(tabId, {idx, observer: observerData}) {
-    const observer = observers[observerData.tabId][observerData.idx]
-    observer.pipes.push({idx, tabId})
 }
 
 // function getPipeList(tabId, {inputData, observerData}) {
 // }
-function sendAttachSignal(observer) {
-    sendToActiveTab({
-        action: "attachMode",
-        observers,
-        observer
-    })
+function attachInput(tabId, {attach, observer}) {
+    const id = `${observer.tab.id}_${observer.idx}`
+    observers[id].pipes.push({tabId, ...attach})
 }
+
 let attachingObserver
 
 /**
@@ -71,20 +59,31 @@ browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
         /**
          * Observe messages
          */
-        case "create":
-            registerObserver(sender.tab.id, payload)
+        case "create": {
             const observer = {
-                idx: payload.idx,
-                textContent: payload.textContent,
-                tabId: sender.tab.id
+                ...payload.observer,
+                tab: {
+                    id: sender.tab.id,
+                    url: sender.tab.url,
+                    title: sender.tab.title,
+                }
             }
+            registerObserver(observer)
             attachingObserver = () => sendAttachSignal(observer)
             browser.tabs.onActivated.addListener(attachingObserver)
-            break;
-        case "update":
-            updateObserver(sender.tab.id, payload)
-            break;
-
+            attachingObserver()
+        }
+        case "update": {
+            const observer = {
+                ...payload.observer,
+                tab: {
+                    id: sender.tab.id,
+                    url: sender.tab.url,
+                    title: sender.tab.title,
+                }
+            }
+            updateObserver(observer)
+        }
         /**
          * Input messages
          */

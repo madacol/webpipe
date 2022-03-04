@@ -18,13 +18,11 @@
     <button on:click={()=>sendToActiveTab({action: "observeMode"})}>Observe</button>
     <section>
         {#if observers}
-            {#each Object.values(observers) as tabObservers}
-                {#each Object.values(tabObservers) as {textContent}}
-                    <div class="observer">
-                        <span>{textContent}</span>
-                        <button>attach</button>
-                    </div>
-                {/each}
+            {#each Object.values(observers) as observer}
+                <div class="observer">
+                    <span>{observer.textContent}</span>
+                    <button>attach</button>
+                </div>
             {/each}
         {/if}
     </section>
