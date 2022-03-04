@@ -1,3 +1,5 @@
+import { sendAttachSignal, sendToActiveTab } from "./utils"
+
 /**
  * Possible attributes of an observer
  * @typedef {{
@@ -41,7 +43,6 @@ const observers = {}
 // make a reference in `window` to share with popup
 window.observers = observers
 
-import { sendToActiveTab } from "./utils"
 function registerObserver(observer) {
     const id = `${observer.tab.id}_${observer.idx}`
 
@@ -72,8 +73,6 @@ function updateObserver(observer) {
 
 }
 
-// function getPipeList(tabId, {inputData, observerData}) {
-// }
 function attachInput(tabId, {attach, observer}) {
     const id = `${observer.tab.id}_${observer.idx}`
     observers[id].pipes.push({tabId, ...attach})
@@ -89,10 +88,6 @@ browser.browserAction.onClicked.addListener(async ()=>{
 });
 
 browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
-    if (!sender.tab) {    // Check if a tab is the one sending a message and not the extension
-        console.warn("ignored", payload, sender)
-        return sendResponse(null) // failed
-    }
     switch (payload.action) {
         /**
          * Observe messages

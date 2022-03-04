@@ -6,7 +6,6 @@ const observers = []
 export default async function observe() {
     const node = await elementPicker("#00bbff70")
     const cssSelector = getCssSelector(node)
-    console.log(cssSelector);
     const idx = observers.push({cssSelector, node}) - 1
     const createPayload = {
         action: "create",

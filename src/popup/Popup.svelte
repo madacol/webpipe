@@ -1,5 +1,5 @@
 <script>
-    import { sendToActiveTab } from "../utils"
+    import { sendAttachSignal, sendToActiveTab } from "../utils"
 
     /**
      * @typedef {import('../background').Observers} Observers
@@ -26,7 +26,7 @@
             {#each Object.values(observers) as observer}
                 <div class="observer">
                     <span>{observer.textContent}</span>
-                    <button>attach</button>
+                    <button on:click={()=>sendAttachSignal(observer)}>attach</button>
                 </div>
             {/each}
         {/if}

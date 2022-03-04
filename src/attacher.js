@@ -1,5 +1,5 @@
 import getCssSelector from "css-selector-generator";
-import elementPicker, { elementPickerConstroller, pickingPromise } from "./element-picker";
+import elementPicker, { pickingPromise } from "./element-picker";
 import { getNodeFromSelector } from "./utils";
 
 const elementsAttached = []
@@ -22,9 +22,10 @@ export async function update({textContent, idx}) {
         await pickingPromise;
     } catch (error) {}
 
-
     let node;
     {
+        if (!elementsAttached[idx]) return console.error(`Does not exist elementsAttached with idx ${idx}`)
+
         const {cssSelector, node: savedNode} = elementsAttached[idx]
 
         // If savedNode is still inserted in the DOM, use it, otherwise find it with the selector
@@ -42,7 +43,6 @@ export async function update({textContent, idx}) {
      * 
      * https://github.com/facebook/draft-js/issues/616
      */
-    console.log(node);
     node.click()
     // node.dispatchEvent(new MouseEvent("click"))
     node.dispatchEvent(new KeyboardEvent("keyup"))
@@ -79,7 +79,6 @@ export async function update({textContent, idx}) {
 export async function attach({observer}) {
     const node = await elementPicker("#ffbb0070")
     const cssSelector = getCssSelector(node)
-    console.log(cssSelector);
     const idx = elementsAttached.push({cssSelector, node}) - 1
     const payload = {
         action: "attach",
