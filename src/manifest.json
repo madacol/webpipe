@@ -7,15 +7,8 @@
     "background": {
         "scripts": ["background.js"]
     },
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["content.js"]
-      }
-    ],
     "web_accessible_resources": [
-        "observer.js",
-        "attacher.js"
+        "content.js"
     ],
     "browser_action": {
         "default_icon": {

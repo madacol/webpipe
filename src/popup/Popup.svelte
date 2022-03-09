@@ -7,9 +7,13 @@
      * @type {Observers}
      */
     let observers;
+    let cssSelector;
 
     // set `observers` from background.js context
-    browser.runtime.getBackgroundPage().then(window => observers = window.observers)
+    browser.runtime.getBackgroundPage().then(window => {
+        observers = window.observers
+        cssSelector = window.cssSelector
+    })
     // mark `observers` as "dirty" everytime an update arrives
     browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
         switch (payload.action) {
@@ -18,19 +22,41 @@
                 break;
         }
     })
+    function onChangeSelector(observer) {
+        return ()=>browser.tabs.sendMessage(
+            observer.tab.id,
+            {
+                action: "updateSelector",
+                cssSelector: observer.cssSelector,
+                idx: observer.idx
+            }
+        )
+    }
 </script>
 <div id="popup">
+    <span>{cssSelector}</span>
+    <button on:click={()=>sendToActiveTab({action: "getSelector"})}>Get selector</button>
+    |
     <button on:click={()=>sendToActiveTab({action: "observeMode"})}>Observe</button>
-    <section>
-        {#if observers}
-            {#each Object.values(observers) as observer}
+    {#if observers && Object.values(observers).length > 0}
+        <section>
+            <div class="observer header">
+                <span>selector</span>
+                <span>current text</span>
+                <div></div>
+            </div>
+            {#each Object.values(observers) as observer (`${observer.tab.id}_${observer.idx}`)}
                 <div class="observer">
+                    <input
+                        bind:value={observer.cssSelector}
+                        on:change={onChangeSelector(observer)}
+                    />
                     <span>{observer.textContent}</span>
                     <button on:click={()=>sendAttachSignal(observer)}>attach</button>
                 </div>
             {/each}
-        {/if}
-    </section>
+        </section>
+    {/if}
 </div>
 
 <style>
@@ -40,12 +66,14 @@
     section {
         display: flex;
         flex-direction: column;
+        margin-top: 0.5em;
     }
     .observer {
         display: grid;
-        grid-template-columns: 3fr 1fr;
+        grid-template-columns: 1fr 3fr 1fr;
         gap: 0.5em;
         padding: 0.5em;
+        border-top: 1px solid black;
     }
     .observer span {
         max-height: 3.5em;

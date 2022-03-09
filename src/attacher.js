@@ -1,8 +1,8 @@
 import getCssSelector from "css-selector-generator";
 import elementPicker, { pickingPromise } from "./element-picker";
-import { getNodeFromSelector } from "./utils";
+import { getNodeFromSelector } from "./observer";
 
-const elementsAttached = []
+export const elementsAttached = []
 
 function selectNodeText(node) {
     const selection = window.getSelection();

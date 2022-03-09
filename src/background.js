@@ -117,6 +117,9 @@ browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
             }
             updateObserver(observer)
         }
+        case "assignSelector": {
+            window.cssSelector = payload.cssSelector
+        }
         /**
          * Input messages
          */
