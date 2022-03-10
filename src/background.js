@@ -105,6 +105,7 @@ browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
             attachingObserver = () => sendAttachSignal(observer)
             browser.tabs.onActivated.addListener(attachingObserver)
             attachingObserver()
+            break;
         }
         case "update": {
             const observer = {
@@ -116,9 +117,11 @@ browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
                 }
             }
             updateObserver(observer)
+            break;
         }
         case "assignSelector": {
             window.cssSelector = payload.cssSelector
+            break;
         }
         /**
          * Input messages
