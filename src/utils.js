@@ -4,7 +4,8 @@ export async function sendToActiveTab(payload) {
         await browser.tabs.sendMessage(tabs[0].id, payload)
     } catch (error) {
         await browser.tabs.executeScript(/*tabs[0].id,*/ {
-            file: "/content.js",
+            code: `import(browser.runtime.getURL("./content.js"))
+                .then(x=>null)`, // this line makes `executeScript(...)` not throw an error https://stackoverflow.com/questions/44567525/inject-scripts-error-script-returned-non-structured-clonable-data-on-firefox-ex/71431342#71431342
             allFrames: true
         });
         await browser.tabs.sendMessage(tabs[0].id, payload)
