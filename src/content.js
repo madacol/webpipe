@@ -2,6 +2,7 @@ import { attach, elementsAttached, update } from "./attacher";
 import { elementPickerConstroller } from "./element-picker";
 import { getSelector, observe, observers, updateSelector } from "./observer";
 
+let listener;
 browser.runtime.onMessage.addListener( listener = (payload, _s) => {
 
     switch (payload.action) {

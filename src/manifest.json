@@ -3,7 +3,6 @@
     "manifest_version": 2,
     "name": "webpipe",
     "version": "0.0.1",
-
     "background": {
         "scripts": ["background.js"]
     },

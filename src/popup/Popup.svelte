@@ -71,7 +71,7 @@
     .observer {
         display: grid;
         grid-template-columns: 1fr 3fr 1fr;
-        gap: 0.5em;
+        column-gap: 0.5em;
         padding: 0.5em;
         border-top: 1px solid black;
     }

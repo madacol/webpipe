@@ -1,12 +1,13 @@
-/** @type {Promise<Node>} */
-export let pickingPromise;
-export let elementPickerConstroller;
+/** @type {Promise<HTMLElement>} */
+export let pickingPromise; // allows wait for picking to end
+/** @type {AbortController} */
+export let elementPickerConstroller = new AbortController(); // allow to cancel picking
 
 /**
  * Allows to pick an element in the visible DOM and returns it
  * 
  * @param {String} backgroundColor css color string
- * @returns {Promise<Node>} element picked
+ * @returns {Promise<HTMLElement>} element picked
  */
 export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
     elementPickerConstroller?.abort();

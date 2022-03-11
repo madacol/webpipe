@@ -80,13 +80,6 @@ function attachInput(tabId, {attach, observer}) {
 
 let attachingObserver
 
-/**
- * Button Action
- */
-browser.browserAction.onClicked.addListener(async ()=>{
-    sendToActiveTab({action: "observeMode"})
-});
-
 browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
     switch (payload.action) {
         /**
@@ -119,10 +112,10 @@ browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
             updateObserver(observer)
             break;
         }
-        case "assignSelector": {
+        case "assignSelector":
             window.cssSelector = payload.cssSelector
             break;
-        }
+
         /**
          * Input messages
          */
@@ -130,9 +123,6 @@ browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
             attachInput(sender.tab.id, payload)
             browser.tabs.onActivated.removeListener(attachingObserver)
             break;
-        // case "request_pipe_list":
-        //     sendResponse(getPipeList())
-        //     break;
 
         default:
             console.warn(`message.action: "${payload.action}" unknown`);
