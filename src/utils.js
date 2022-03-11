@@ -6,7 +6,8 @@ export async function sendToActiveTab(payload) {
     } catch (error) {
         await browser.tabs.executeScript(tabId, {
             code: `import(browser.runtime.getURL("./content.js"))
-                .then(x=>null)`, // this line makes `executeScript(...)` not throw an error https://stackoverflow.com/questions/44567525/inject-scripts-error-script-returned-non-structured-clonable-data-on-firefox-ex/71431342#71431342
+                .then(x=>x.default())`, // this line makes `executeScript(...)` not throw an error https://stackoverflow.com/questions/44567525/inject-scripts-error-script-returned-non-structured-clonable-data-on-firefox-ex/71431342#71431342
+                // and now with the addition of `default()` it is also necessary
             allFrames: true
         });
         await browser.tabs.sendMessage(tabId, payload)

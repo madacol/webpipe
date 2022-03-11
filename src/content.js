@@ -2,8 +2,7 @@ import { attach, elementsAttached, update } from "./attacher";
 import { elementPickerConstroller } from "./element-picker";
 import { getSelector, observe, observers, updateSelector } from "./observer";
 
-let listener;
-browser.runtime.onMessage.addListener( listener = (payload, _s) => {
+function onMessage (payload) {
 
     switch (payload.action) {
 
@@ -31,12 +30,21 @@ browser.runtime.onMessage.addListener( listener = (payload, _s) => {
             console.warn(`tab: unknown message.action: "${payload.action}"`);
             break;
     }
-    return true
-})
-window.addEventListener("visibilitychange", event => {
+
+}
+
+function onVisibility(event) {
     event.stopImmediatePropagation()
     if (document.visibilityState === 'hidden') {
         elementPickerConstroller.abort()
-        if (elementsAttached.length === 0 && observers.length === 0) browser.runtime.onMessage.removeListener(listener)
+        if (elementsAttached.length === 0 && observers.length === 0) {
+            browser.runtime.onMessage.removeListener(onMessage)
+            window.removeEventListener("visibilitychange", onVisibility, true)
+        }
     }
-}, true);
+};
+
+export default ()=>{
+    browser.runtime.onMessage.addListener(onMessage);
+    window.addEventListener("visibilitychange", onVisibility, true);
+}
