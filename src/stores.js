@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { Writable, writable } from 'svelte/store';
 
-/** @type {import('svelte/store').Writable<HTMLElement|null>} */
-export const node = writable(null);
+/** @type {Writable<HTMLElement>} */ export const hoveringNode = writable(null);
+/** @type {Writable<HTMLElement>} */ export const selectorExplorerNode = writable(null);
