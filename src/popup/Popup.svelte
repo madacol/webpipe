@@ -53,6 +53,13 @@
                     />
                     <span>{observer.textContent}</span>
                     <button on:click={()=>sendAttachSignal(observer)}>attach</button>
+                    <div>
+                        {#each observer.pipes as pipe}
+                            <div class="pipe">
+                                <span>{pipe.cssSelector}</span>
+                            </div>
+                        {/each}
+                    </div>
                 </div>
             {/each}
         </section>

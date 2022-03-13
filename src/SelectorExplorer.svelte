@@ -15,7 +15,14 @@
 
     /** @type {number}*/ let left = 0;
     /** @type {number}*/ let top  = 0;
-    $: if ($hoveringNode) ({left, top} = getCoords($hoveringNode))
+    $: if ($hoveringNode) {
+        ({left, top} = getCoords($hoveringNode))
+    }
+
+    /** @type {boolean}*/ let isActive = false;
+    /** @type {[string]}*/ let classes=[];
+    /** @type {[string]}*/ let attributes=[];
+
 </script>
 
 {#if $hoveringNode}
@@ -23,9 +30,20 @@
         left: {left}px;
         top: {top}px;
     ">
-        <button>
+        <button on:click={()=>isActive=!isActive}>
             @
         </button>
+        {#if isActive}
+            {#each $hoveringNode.classList as classString }
+                <span>{classString}</span>
+                <input type="checkbox" bind:group={classes} value={classString}>
+            {/each}
+            <hr>
+            {#each $hoveringNode.attributes as {name, value} }
+                <span>{`[${name}=${value}]`}</span>
+                <input type="checkbox" bind:group={attributes} value={`[${name}=${value}]`}>
+            {/each}
+        {/if}
     </div>
 {/if}
 
