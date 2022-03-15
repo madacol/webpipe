@@ -1,7 +1,7 @@
 import { hoveringNode, selectorExplorerNode as _selectorExplorerNode } from "./stores";
 
-import SelectorExplorer from "./SelectorExplorer.svelte";
-new SelectorExplorer({
+import ObserverPreview from "./ObserverPreview.svelte";
+new ObserverPreview({
   target: document.body,
 });
 
