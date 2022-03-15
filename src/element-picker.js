@@ -1,13 +1,12 @@
-import { hoveringNode, selectorExplorerNode as _selectorExplorerNode } from "./stores";
-
+/**
+ * Mount ObserverPreview
+ */
 import ObserverPreview from "./ObserverPreview.svelte";
-new ObserverPreview({
-  target: document.body,
+const observerPreviewContainer = document.createElement("div")
+document.body.appendChild(observerPreviewContainer)
+const observerPreview = new ObserverPreview({
+  target: observerPreviewContainer,
 });
-
-/** @type {Node} */
-let selectorExplorerNode;
-_selectorExplorerNode.subscribe(node=>selectorExplorerNode=node)
 
 /** @type {Promise<HTMLElement>} */
 export let pickingPromise; // allows wait for picking to end
@@ -31,7 +30,7 @@ export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
             if (reason!=="aborted") elementPickerConstroller.abort(reason)
             document.body.style.cursor = 'auto';
             oldTarget.style.backgroundColor = oldBackgroundColor
-            hoveringNode.set(null)
+            observerPreview.$set({hoveringNode: null})
         }
 
         const signal = elementPickerConstroller.signal
@@ -39,7 +38,7 @@ export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
 
         // return target node
         document.addEventListener('click', (event)=>{
-            if (selectorExplorerNode?.contains(event.target)) return
+            if (observerPreviewContainer.contains(event.target)) return
             event.preventDefault();
             event.stopPropagation();
             reset("element picked")
@@ -48,16 +47,16 @@ export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
 
         // set backgroundColor to element directly above pointer
         document.addEventListener('mouseover', ({target})=>{
-            if (selectorExplorerNode?.contains(target)) return
+            if (observerPreviewContainer.contains(target)) return
             oldTarget = target;
             oldBackgroundColor = target.style.backgroundColor;
             target.style.backgroundColor = backgroundColor;
-            hoveringNode.set(target)
+            observerPreview.$set({hoveringNode: target})
         }, {capture: true, signal});
 
         // restore original color (if any)
         document.addEventListener('mouseout', ({relatedTarget})=>{
-            if (selectorExplorerNode?.contains(relatedTarget)) return
+            if (observerPreviewContainer.contains(relatedTarget)) return
             oldTarget.style.backgroundColor = oldBackgroundColor
         }, {capture: true, signal});
 
