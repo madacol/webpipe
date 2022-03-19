@@ -1,12 +1,5 @@
-/**
- * Mount ObserverPreview
- */
+import getCssSelector from "css-selector-generator";
 import ObserverPreview from "./ObserverPreview.svelte";
-const observerPreviewContainer = document.createElement("div")
-document.body.appendChild(observerPreviewContainer)
-const observerPreview = new ObserverPreview({
-  target: observerPreviewContainer,
-});
 
 /** @type {Promise<HTMLElement>} */
 export let pickingPromise; // allows wait for picking to end
@@ -21,18 +14,50 @@ export let elementPickerConstroller = new AbortController(); // allow to cancel 
  */
 export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
     elementPickerConstroller?.abort();
+
+    /**
+     * Mount ObserverPreview
+     */
+    let observerPreviewContainer = document.getElementById("observer-preview")
+    if (!observerPreviewContainer) {
+        observerPreviewContainer = document.createElement("div")
+        observerPreviewContainer.id = "observer-preview"
+        document.body.appendChild(observerPreviewContainer)
+    }
+    const observerPreview = new ObserverPreview({
+      target: observerPreviewContainer,
+    });
+
+    let stylesheet = document.getElementById("element-picker")
+    if (!stylesheet) {
+        stylesheet = document.createElement('style')
+        stylesheet.id = "element-picker"
+        stylesheet.innerText = `
+            .element-picking {
+                background-color: ${backgroundColor} !important;
+                outline: 3px dashed ${backgroundColor}; !important;
+            }`
+        document.head.appendChild(stylesheet)
+    }
+
     return pickingPromise = new Promise( (resolve, reject) => {
-        let oldBackgroundColor;
+        /** @type {HTMLElement} */
         let oldTarget;
         elementPickerConstroller = new AbortController()
 
         function reset(reason) {
-            if (reason!=="aborted") elementPickerConstroller.abort(reason)
-            document.body.style.cursor = 'auto';
-            oldTarget.style.backgroundColor = oldBackgroundColor
+            if (reason!=="success") {
+                reject("element-picker: " + reason)
+            }
+            if (reason!=="aborted") {
+                signal.onabort = null
+                elementPickerConstroller.abort(reason)
+            }
+            oldTarget.classList.remove("element-picking")
             observerPreview.$set({hoveringNode: null})
+            document.head.removeChild(stylesheet)
+            document.body.removeChild(observerPreviewContainer)
         }
-
         const signal = elementPickerConstroller.signal
         signal.onabort = ()=>reset("aborted")
 
@@ -41,7 +66,7 @@ export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
             if (observerPreviewContainer.contains(event.target)) return
             event.preventDefault();
             event.stopPropagation();
-            reset("element picked")
+            reset("success")
             resolve(event.target)
         }, {capture: true, signal});
 
@@ -49,15 +74,14 @@ export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
         document.addEventListener('mouseover', ({target})=>{
             if (observerPreviewContainer.contains(target)) return
             oldTarget = target;
-            oldBackgroundColor = target.style.backgroundColor;
-            target.style.backgroundColor = backgroundColor;
-            observerPreview.$set({hoveringNode: target})
+            observerPreview.$set({hoveringNode: target, cssSelector: getCssSelector(target)})
+            target.classList.add("element-picking")
         }, {capture: true, signal});
 
         // restore original color (if any)
         document.addEventListener('mouseout', ({relatedTarget})=>{
             if (observerPreviewContainer.contains(relatedTarget)) return
-            oldTarget.style.backgroundColor = oldBackgroundColor
+            oldTarget.classList.remove("element-picking")
         }, {capture: true, signal});
 
         // cancel picking element
@@ -66,7 +90,6 @@ export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
                 event.preventDefault();
                 event.stopPropagation();
                 reset("cancelled")
-                reject("picking element cancelled")
             }
         }, {capture: true, signal});
     })
