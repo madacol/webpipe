@@ -18,12 +18,10 @@ export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
     /**
      * Mount ObserverPreview
      */
-    let observerPreviewContainer = document.getElementById("observer-preview")
-    if (!observerPreviewContainer) {
-        observerPreviewContainer = document.createElement("div")
-        observerPreviewContainer.id = "observer-preview"
-        document.body.appendChild(observerPreviewContainer)
-    }
+    try { document.body.removeChild(document.getElementById("observer-preview")) } catch (error) {console.error(error);}
+    const observerPreviewContainer = document.createElement("div")
+    observerPreviewContainer.id = "observer-preview"
+    document.body.appendChild(observerPreviewContainer)
     const observerPreview = new ObserverPreview({
       target: observerPreviewContainer,
     });
