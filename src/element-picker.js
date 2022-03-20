@@ -31,6 +31,9 @@ export default function elementPicker(backgroundColor = 'rgba(0, 255, 255, 0.3)'
         stylesheet = document.createElement('style')
         stylesheet.id = "element-picker"
         stylesheet.innerText = `
+            body, html {
+                overflow: initial !important;
+            }
             .element-picking {
                 background-color: ${backgroundColor} !important;
                 outline: 3px dashed ${borderColor}; !important;
