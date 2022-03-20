@@ -90,6 +90,15 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
         }
     }
     $: if (nodeSelector) parseNodeSelector()
+    /**
+     * The above is a technique to stop svelte invalidating the dependency tree upward
+     * https://github.com/sveltejs/svelte/issues/4933#issuecomment-1072607689
+     * 
+     * You may think you could avoid declaring this function above and have this done using a **reactive statement**
+     * But then, when any of the states assigned is modified externally, svelte also marks its dependencies as dirty
+     * which then makes this **reactive statement** to be run again, thus losing the modifications made
+     */
+
 
     /**
      * Below we do the checkbox bind:groups but traversing components
@@ -107,7 +116,19 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
                           .filter(attr=>!["class","style", "id"].includes(attr.name))
                           .map(attr=>`[${attr.name}='${attr.value}']`)
 
-    $: constructedNodeSelector = tagSelector + idSelector + selectedClasses.join("") + selectedAttributes.join("") + selectedPseudoClasses.join("")
+    /**
+     * Below is a technique to stop svelte invalidating the dependency tree upward
+     * https://github.com/sveltejs/svelte/issues/4933#issuecomment-1072607689
+     * 
+     * You may think you could avoid declaring this function and have this done with a simple **reactive declaration**
+     * like this `$: constructedNodeSelector = tagSelector + idSelector + selectedClasses.join("") + selectedAttributes.join("") + selectedPseudoClasses.join("")`
+     * But then when `constructedNodeSelector` is modified externally, svelte also marks its dependencies as dirty
+     * which then makes the above **reactive declaration** to be run again, thus losing the modifications made to `constructedNodeSelector`
+     */
+    let constructedNodeSelector;
+    const getconstructedNodeSelector = ()=> constructedNodeSelector = tagSelector + idSelector + selectedClasses.join("") + selectedAttributes.join("") + selectedPseudoClasses.join("")
+    $: tagSelector, idSelector, selectedClasses, selectedAttributes, selectedPseudoClasses, getconstructedNodeSelector()
+
     $: selector = ancestorsSelector + constructedNodeSelector
     $: {
         document.querySelectorAll(".element-picking").forEach(x=>x.classList.remove("element-picking"))
@@ -142,7 +163,10 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
     ">
         {#if isActive}
             <div id="selector">
-                <input type="text" bind:value={selector}>
+                <div>
+                    <input type="text" bind:value={ancestorsSelector}>
+                    <input type="text" bind:value={constructedNodeSelector}>
+                </div>
 
                 <CheckboxToggle
                     label={tag}
