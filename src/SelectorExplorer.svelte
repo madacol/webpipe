@@ -1,4 +1,6 @@
 <script>
+import { onDestroy } from "svelte";
+
 import CheckboxToggle from "./CheckboxToggle.svelte";
 
     /**@type {HTMLElement}*/ 
@@ -138,7 +140,14 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
     }
     $: console.log(selector);
 
-    let isActive = false;
+    let isOpen = false;
+    function openExplorer(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        isOpen=true;
+    }
+    document.addEventListener("contextmenu", openExplorer, true)
+    onDestroy(()=>document.removeEventListener("contextmenu", openExplorer, true))
 
     function updateGroup({ target }, group) {
         const { value, checked } = target;
@@ -151,17 +160,17 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
 </script>
 
 {#if hoveringNode}
-    {#if isActive}
+    {#if isOpen}
         <div id="shadow-cancel" style="top: calc({window.scrollY}px - 50vh);" on:click={()=>{
-            isActive=false
+            isOpen=false
             document.querySelectorAll(".element-picking").forEach(x=>x.classList.remove("element-picking"))
         }}/>
     {/if}
     <div id="hoveringNode-position" style="
         left: {nodeCoords.left}px;
-        top: {Math.max(nodeCoords.top, window.scrollY)}px;
+        top: {Math.max(nodeCoords.top-14, window.scrollY)}px;
     ">
-        {#if isActive}
+        {#if isOpen}
             <div id="selector">
                 <div>
                     <input type="text" bind:value={ancestorsSelector}>
@@ -200,9 +209,9 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
                 {/each}
             </div>
         {:else}
-            <button on:click={()=>isActive=true}>
-                @
-            </button>
+            <span id="open-explorer" role="button" on:click={openExplorer}>
+                {selector}
+            </span>
         {/if}
     </div>
 {/if}
@@ -214,6 +223,7 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
         color: white;
         z-index: 999999;
         opacity: 0.85;
+        font-size: 14px;
     }
     #selector {
         display: flex;
@@ -229,5 +239,11 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
         width: 100%;
         height: 200%;
         z-index: 999999;
+    }
+    #open-explorer {
+        max-width: 300px;
+        max-height: 2em;
+        overflow: auto;
+        display: inline-block;
     }
 </style>
