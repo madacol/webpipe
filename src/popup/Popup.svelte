@@ -35,9 +35,9 @@
 </script>
 <div id="popup">
     <span>{cssSelector}</span>
-    <button on:click={()=>sendToActiveTab({action: "getSelector"})}>Get selector</button>
+    <button on:click={async ()=>{await sendToActiveTab({action: "getSelector"}); window.close();}}>Get selector</button>
     |
-    <button on:click={()=>sendToActiveTab({action: "observeMode"})}>Observe</button>
+    <button on:click={async ()=>{await sendToActiveTab({action: "observeMode"}); window.close();}}>Observe</button>
     {#if observers && Object.values(observers).length > 0}
         <section>
             <div class="observer header">
@@ -52,7 +52,7 @@
                         on:change={onChangeSelector(observer)}
                     />
                     <span>{observer.textContent}</span>
-                    <button on:click={()=>sendAttachSignal(observer)}>attach</button>
+                    <button on:click={async ()=>{await sendAttachSignal(observer); window.close();}}>attach</button>
                     <div>
                         {#each observer.pipes as pipe}
                             <div class="pipe">
