@@ -18,7 +18,7 @@ export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
     /**
      * Mount ObserverPreview
      */
-    try { document.body.removeChild(document.getElementById("observer-preview")) } catch (error) {console.error(error);}
+    document.getElementById("observer-preview")?.remove()
     const observerPreviewContainer = document.createElement("div")
     observerPreviewContainer.id = "observer-preview"
     document.body.appendChild(observerPreviewContainer)
@@ -53,8 +53,8 @@ export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
             }
             oldTarget.classList.remove("element-picking")
             observerPreview.$set({hoveringNode: null})
-            document.head.removeChild(stylesheet)
-            document.body.removeChild(observerPreviewContainer)
+            stylesheet.remove()
+            observerPreviewContainer.remove()
         }
         const signal = elementPickerConstroller.signal
         signal.onabort = ()=>reset("aborted")

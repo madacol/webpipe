@@ -54,6 +54,7 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
         nodeSelector = nodeSelectorMatch[0]
         ancestorsSelector = cssSelector.slice(0, nodeSelectorMatch.index)
     }
+    $: tag = hoveringNode?.tagName.toLowerCase()
     let isId = false;
     let isTag = false;
     let selectedClasses=[];
@@ -81,7 +82,7 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
                 case "[": selectedAttributes.push(selector.replaceAll("\\","")); break;
                 case ":": selectedPseudoClasses.push(selector); break;
                 default:
-                    (selector === hoveringNode?.tagName.toLowerCase())
+                    (selector === tag)
                         ? isTag = true
                         : console.error(`selector format unkown: ${selector}`);
                     break;
@@ -96,17 +97,17 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
      * https://svelte.dev/repl/02d60142a1cc470bb43e0cfddaba4af1?version=3.38.3
      */
 
-
-    $: id = isId ? hoveringNode?.id : "";
-    $: tag = isTag ? hoveringNode?.tagName.toLowerCase() : "";
+    $: id = "#"+hoveringNode?.id
+    $: idSelector = isId ? id : "";
+    $: tagSelector = isTag ? tag : "";
     $: classes = Array.from(hoveringNode?.classList || []).filter(x=>x!=="element-picking").map(x=>"."+x)
 
     // attributes
     $: attributes = Object.values(hoveringNode?.attributes || [])
-                          .filter(attr=>!["class","style"].includes(attr.name))
+                          .filter(attr=>!["class","style", "id"].includes(attr.name))
                           .map(attr=>`[${attr.name}='${attr.value}']`)
 
-    $: constructedNodeSelector = tag + id + selectedClasses.join("") + selectedAttributes.join("") + selectedPseudoClasses.join("")
+    $: constructedNodeSelector = tagSelector + idSelector + selectedClasses.join("") + selectedAttributes.join("") + selectedPseudoClasses.join("")
     $: selector = ancestorsSelector + constructedNodeSelector
     $: {
         document.querySelectorAll(".element-picking").forEach(x=>x.classList.remove("element-picking"))
@@ -144,12 +145,12 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
                 <input type="text" bind:value={selector}>
 
                 <CheckboxToggle
-                    label={hoveringNode.tagName.toLowerCase()}
+                    label={tag}
                     bind:checked={isTag}
                 />
                 {#if hoveringNode.id}
                     <CheckboxToggle
-                        label={hoveringNode.id}
+                        label={id}
                         bind:checked={isId}
                     />
                 {/if}
@@ -185,9 +186,10 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
 <style>
     #hoveringNode-position {
         position: absolute;
-        background-color: rgba(44, 44, 44, 0.452);
+        background-color: rgb(44, 44, 44);
         color: white;
         z-index: 999999;
+        opacity: 0.85;
     }
     #selector {
         display: flex;
@@ -196,9 +198,9 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
     .attributes, .classes {
         display: flex;
     }
-    hr {width: 100%;}
+    hr {width: 90%;}
     #shadow-cancel {
-        background-color: rgba(0, 0, 0, 0.26);
+        background-color: rgba(0, 0, 0, 0.25);
         position: absolute;
         width: 100%;
         height: 100%;
