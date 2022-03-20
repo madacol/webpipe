@@ -131,7 +131,7 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
 
 {#if hoveringNode}
     {#if isActive}
-        <div id="shadow-cancel" style="top: {window.scrollY}px;" on:click={()=>{
+        <div id="shadow-cancel" style="top: calc({window.scrollY}px - 50vh);" on:click={()=>{
             isActive=false
             document.querySelectorAll(".element-picking").forEach(x=>x.classList.remove("element-picking"))
         }}/>
@@ -203,7 +203,7 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
         background-color: rgba(0, 0, 0, 0.25);
         position: absolute;
         width: 100%;
-        height: 100%;
+        height: 200%;
         z-index: 999999;
     }
 </style>
