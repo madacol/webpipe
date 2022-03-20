@@ -149,14 +149,11 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
     document.addEventListener("contextmenu", openExplorer, true)
     onDestroy(()=>document.removeEventListener("contextmenu", openExplorer, true))
 
-    function updateGroup({ target }, group) {
-        const { value, checked } = target;
+    function updateGroup({ target: { value, checked } }, group) {
         return (checked)
             ? [...group, value]
             : group.filter((item) => item !== value);
     }
-
-    // group.includes(label)
 </script>
 
 {#if hoveringNode}
