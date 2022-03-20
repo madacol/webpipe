@@ -118,6 +118,30 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
                           .filter(attr=>!["class","style", "id"].includes(attr.name))
                           .map(attr=>`[${attr.name}='${attr.value}']`)
 
+    let pseudoClasses = [];
+    $: if (hoveringNode) pseudo: {
+        pseudoClasses = [];
+        let node = hoveringNode
+        if (node.previousElementSibling == null) pseudoClasses.push(":first-child", ":first-of-type")
+        if (node.nextElementSibling == null) pseudoClasses.push(":last-child", ":last-of-type")
+        if (pseudoClasses.length === 4) {   // is first and last, hence, only child
+            pseudoClasses.push(":only-child", ":only-of-type")
+            break pseudo;
+        }
+        let childIndex=1;
+        let typeIndex=1;
+        while (node=node.previousElementSibling) {
+            childIndex++;
+            if (node.tagName.toLowerCase() === tag) typeIndex++
+        };
+        const siblingsCount = hoveringNode.parentElement.children.length
+        pseudoClasses.push(
+            `:nth-child(${childIndex})`,
+            `:nth-last-child(${siblingsCount - childIndex + 1})`,
+            `:nth-of-type(${typeIndex})`
+        )
+    }
+
     /**
      * Below is a technique to stop svelte invalidating the dependency tree upward
      * https://github.com/sveltejs/svelte/issues/4933#issuecomment-1072607689
@@ -204,6 +228,16 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
                         />
                     </div>
                 {/each}
+                <hr>
+                {#each pseudoClasses as pseudoClass }
+                    <div class="pseudo-classes">
+                        <CheckboxToggle
+                            label={pseudoClass}
+                            checked={selectedPseudoClasses.includes(pseudoClass)}
+                            on:change={e=>selectedPseudoClasses = updateGroup(e, selectedPseudoClasses)}
+                        />
+                    </div>
+                {/each}
             </div>
         {:else}
             <span id="open-explorer" role="button" on:click={openExplorer}>
@@ -225,9 +259,8 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
     #selector {
         display: flex;
         flex-direction: column;
-    }
-    .attributes, .classes {
-        display: flex;
+        align-items: flex-start;
+        gap: 0.3em;
     }
     hr {width: 90%;}
     #shadow-cancel {
