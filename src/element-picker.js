@@ -12,7 +12,7 @@ export let elementPickerConstroller = new AbortController(); // allow to cancel 
  * @param {String} backgroundColor css color string
  * @returns {Promise<HTMLElement>} element picked
  */
-export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
+export default function elementPicker(backgroundColor = 'rgba(0, 255, 255, 0.3)', borderColor = 'rgba(0, 90, 90, 0.3)') {
     elementPickerConstroller?.abort();
 
     /**
@@ -33,7 +33,7 @@ export default function elementPicker(backgroundColor = 'rgba(0, 0, 0, 0.1)') {
         stylesheet.innerText = `
             .element-picking {
                 background-color: ${backgroundColor} !important;
-                outline: 3px dashed ${backgroundColor}; !important;
+                outline: 3px dashed ${borderColor}; !important;
             }`
         document.head.appendChild(stylesheet)
     }
