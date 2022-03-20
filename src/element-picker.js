@@ -1,5 +1,5 @@
 import getCssSelector from "css-selector-generator";
-import ObserverPreview from "./ObserverPreview.svelte";
+import SelectorExplorer from "./SelectorExplorer.svelte";
 
 /** @type {Promise<HTMLElement>} */
 export let pickingPromise; // allows wait for picking to end
@@ -16,14 +16,14 @@ export default function elementPicker(backgroundColor = 'rgba(0, 255, 255, 0.3)'
     elementPickerConstroller?.abort();
 
     /**
-     * Mount ObserverPreview
+     * Mount SelectorExplorer
      */
-    document.getElementById("observer-preview")?.remove()
-    const observerPreviewContainer = document.createElement("div")
-    observerPreviewContainer.id = "observer-preview"
-    document.body.appendChild(observerPreviewContainer)
-    const observerPreview = new ObserverPreview({
-      target: observerPreviewContainer,
+    document.getElementById("selector-explorer")?.remove()
+    const selectorExplorerContainer = document.createElement("div")
+    selectorExplorerContainer.id = "selector-explorer"
+    document.body.appendChild(selectorExplorerContainer)
+    const selectorExplorer = new SelectorExplorer({
+      target: selectorExplorerContainer,
     });
 
     let stylesheet = document.getElementById("element-picker")
@@ -55,16 +55,16 @@ export default function elementPicker(backgroundColor = 'rgba(0, 255, 255, 0.3)'
                 elementPickerConstroller.abort(reason)
             }
             oldTarget.classList.remove("element-picking")
-            observerPreview.$set({hoveringNode: null})
+            selectorExplorer.$set({hoveringNode: null})
             stylesheet.remove()
-            observerPreviewContainer.remove()
+            selectorExplorerContainer.remove()
         }
         const signal = elementPickerConstroller.signal
         signal.onabort = ()=>reset("aborted")
 
         // return target node
         document.addEventListener('click', (event)=>{
-            if (observerPreviewContainer.contains(event.target)) return
+            if (selectorExplorerContainer.contains(event.target)) return
             event.preventDefault();
             event.stopPropagation();
             reset("success")
@@ -73,15 +73,15 @@ export default function elementPicker(backgroundColor = 'rgba(0, 255, 255, 0.3)'
 
         // set backgroundColor to element directly above pointer
         document.addEventListener('mouseover', ({target})=>{
-            if (observerPreviewContainer.contains(target)) return
+            if (selectorExplorerContainer.contains(target)) return
             oldTarget = target;
-            observerPreview.$set({hoveringNode: target, cssSelector: getCssSelector(target)})
+            selectorExplorer.$set({hoveringNode: target, cssSelector: getCssSelector(target)})
             target.classList.add("element-picking")
         }, {capture: true, signal});
 
         // restore original color (if any)
         document.addEventListener('mouseout', ({relatedTarget})=>{
-            if (observerPreviewContainer.contains(relatedTarget)) return
+            if (selectorExplorerContainer.contains(relatedTarget)) return
             oldTarget.classList.remove("element-picking")
         }, {capture: true, signal});
 
