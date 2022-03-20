@@ -15,7 +15,7 @@
         <div>
             <span/>
         </div>
-        {label}&nbsp;
+        <span>&nbsp;{label}</span>
     </label>
 </div>
 
@@ -31,6 +31,10 @@ label {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+label > span {
+    max-width: 400px;
+    overflow: auto;
 }
 
 /* Hide default HTML checkbox */
@@ -49,7 +53,7 @@ label > div {
 }
 
 /* The slider */
-span {
+div > span {
     position: absolute;
     top: 0;
     left: 0;
@@ -61,7 +65,7 @@ span {
     border-radius: 1.3em;
 }
 
-span:before {
+div > span:before {
     position: absolute;
     content: "";
     height: 1em;
