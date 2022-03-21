@@ -135,6 +135,9 @@ import Modal from "./Modal.svelte";
         document.querySelectorAll(".element-picking").forEach(x=>x.classList.remove("element-picking"))
         try {
             document.querySelectorAll(selector).forEach(x=>x.classList.add("element-picking"))
+            document.getElementById("selector-explorer")
+                    .querySelectorAll(".element-picking")
+                    .forEach(x=>x.classList.remove("element-picking"))
         } catch (error) {console.error(error);}
     }
     $: console.log(selector);
