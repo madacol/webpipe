@@ -2,39 +2,14 @@
 import { onDestroy } from "svelte";
 
 import CheckboxToggle from "./CheckboxToggle.svelte";
+import Modal from "./Modal.svelte";
 
     /**@type {HTMLElement}*/ 
     export let hoveringNode = null;
     /**@type {string}*/ 
     export let cssSelector = "";
 
-    /**
-     * get coords of any element relative to the document
-     * simplified version of https://stackoverflow.com/a/26230989/3163120
-     * @param {HTMLElement} node
-     * @returns {{
-     *  top: number,
-     *  left: number,
-     *  bottom: number,
-     *  right: number,
-     * }}
-     */
-    function getCoords(node) { // crossbrowser version
-        if (!node) return
-        const box = node.getBoundingClientRect();
-        const top  = box.top  + window.scrollY;
-        const left = box.left + window.scrollX;
-        const bottom = box.bottom + window.scrollY;
-        const right = box.right + window.scrollX;
-        return {
-            top: Math.round(top),
-            left: Math.round(left),
-            bottom: Math.round(bottom),
-            right: Math.round(right),
-        };
-    }
-
-    $: nodeCoords = getCoords(hoveringNode)
+    $: nodeCoords = hoveringNode?.getBoundingClientRect();
 
     // regex to extract selectors
     const tagRegex = /[a-z\-]+/g
@@ -181,66 +156,65 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
 </script>
 
 {#if hoveringNode}
-    {#if isOpen}
-        <div id="shadow-cancel" style="top: calc({window.scrollY}px - 50vh);" on:click={()=>{
-            isOpen=false
-            document.querySelectorAll(".element-picking").forEach(x=>x.classList.remove("element-picking"))
-        }}/>
-    {/if}
-    <div id="hoveringNode-position" style="
-        left: {nodeCoords.left}px;
-        top: {Math.max(nodeCoords.top-14, window.scrollY)}px;
-    ">
+    <div id="selectorExplorer">
         {#if isOpen}
-            <div id="selector">
-                <div>
+            <Modal on:close={()=>{
+                isOpen=false
+                document.querySelectorAll(".element-picking").forEach(x=>x.classList.remove("element-picking"))
+            }}>
+                <div slot="header">
                     <input type="text" bind:value={ancestorsSelector}>
                     <input type="text" bind:value={constructedNodeSelector}>
                 </div>
 
-                <CheckboxToggle
-                    label={tag}
-                    bind:checked={isTag}
-                />
-                {#if hoveringNode.id}
+                <div id="selector">
                     <CheckboxToggle
-                        label={id}
-                        bind:checked={isId}
+                        label={tag}
+                        bind:checked={isTag}
                     />
-                {/if}
-                <hr>
-                {#each classes as classString }
-                    <div class="classes">
+                    {#if hoveringNode.id}
                         <CheckboxToggle
-                            label={classString}
-                            checked={selectedClasses.includes(classString)}
-                            on:change={e=>selectedClasses = updateGroup(e, selectedClasses)}
+                            label={id}
+                            bind:checked={isId}
                         />
-                    </div>
-                {/each}
-                <hr>
-                {#each attributes as selector }
-                    <div class="attributes">
-                        <CheckboxToggle
-                            label={selector}
-                            checked={selectedAttributes.includes(selector)}
-                            on:change={e=>selectedAttributes = updateGroup(e, selectedAttributes)}
-                        />
-                    </div>
-                {/each}
-                <hr>
-                {#each pseudoClasses as pseudoClass }
-                    <div class="pseudo-classes">
-                        <CheckboxToggle
-                            label={pseudoClass}
-                            checked={selectedPseudoClasses.includes(pseudoClass)}
-                            on:change={e=>selectedPseudoClasses = updateGroup(e, selectedPseudoClasses)}
-                        />
-                    </div>
-                {/each}
-            </div>
+                    {/if}
+                    <hr>
+                    {#each classes as classString }
+                        <div class="classes">
+                            <CheckboxToggle
+                                label={classString}
+                                checked={selectedClasses.includes(classString)}
+                                on:change={e=>selectedClasses = updateGroup(e, selectedClasses)}
+                            />
+                        </div>
+                    {/each}
+                    <hr>
+                    {#each attributes as selector }
+                        <div class="attributes">
+                            <CheckboxToggle
+                                label={selector}
+                                checked={selectedAttributes.includes(selector)}
+                                on:change={e=>selectedAttributes = updateGroup(e, selectedAttributes)}
+                            />
+                        </div>
+                    {/each}
+                    <hr>
+                    {#each pseudoClasses as pseudoClass }
+                        <div class="pseudo-classes">
+                            <CheckboxToggle
+                                label={pseudoClass}
+                                checked={selectedPseudoClasses.includes(pseudoClass)}
+                                on:change={e=>selectedPseudoClasses = updateGroup(e, selectedPseudoClasses)}
+                            />
+                        </div>
+                    {/each}
+                </div>
+            </Modal>
         {:else}
-            <span id="open-explorer" role="button" on:click={openExplorer}>
+            <span id="open-explorer" role="button" on:click={openExplorer} style="
+                left: {Math.max(nodeCoords.left, 0)}px;
+                top: {Math.max(nodeCoords.top, 0)}px;
+            ">
                 {selector}
             </span>
         {/if}
@@ -248,10 +222,8 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
 {/if}
 
 <style>
-    #hoveringNode-position {
+    #selectorExplorer {
         position: absolute;
-        background-color: rgb(44, 44, 44);
-        color: white;
         z-index: 999999;
         opacity: 0.85;
         font-size: 14px;
@@ -263,17 +235,14 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
         gap: 0.3em;
     }
     hr {width: 90%;}
-    #shadow-cancel {
-        background-color: rgba(0, 0, 0, 0.25);
-        position: absolute;
-        width: 100%;
-        height: 200%;
-        z-index: 999999;
-    }
     #open-explorer {
+        position: fixed;
         max-width: 300px;
         max-height: 2em;
         overflow: auto;
         display: inline-block;
+        transform: translate(0,-50%);
+        background-color: rgb(44, 44, 44);
+        color: white;
     }
 </style>
