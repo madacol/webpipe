@@ -35,7 +35,9 @@ label {
 label > span {
     max-width: 400px;
     overflow: auto;
+    user-select: text;
 }
+
 
 /* Hide default HTML checkbox */
 input {
