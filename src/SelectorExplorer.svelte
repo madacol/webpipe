@@ -109,7 +109,7 @@ import Modal from "./Modal.svelte";
             childIndex++;
             if (node.tagName.toLowerCase() === tag) typeIndex++
         };
-        const siblingsCount = hoveringNode.parentElement.children.length
+        const siblingsCount = hoveringNode.parentElement.childElementCount
         pseudoClasses.push(
             `:nth-child(${childIndex})`,
             `:nth-last-child(${siblingsCount - childIndex + 1})`,
