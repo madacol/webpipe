@@ -228,7 +228,7 @@ import Modal from "./Modal.svelte";
     #selectorExplorer {
         position: absolute;
         z-index: 999999;
-        opacity: 0.85;
+        opacity: 0.95;
         font-size: 14px;
     }
     #selector {
