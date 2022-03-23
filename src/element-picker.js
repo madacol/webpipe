@@ -1,5 +1,5 @@
 import getCssSelector from "css-selector-generator";
-import SelectorExplorer from "./SelectorExplorer.svelte";
+import SelectorExplorer from "./Explorer/SelectorExplorer.svelte";
 
 /** @type {Promise<HTMLElement>} */
 export let pickingPromise; // allows wait for picking to end
