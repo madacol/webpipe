@@ -1,4 +1,3 @@
-import getCssSelector from "css-selector-generator";
 import SelectorExplorer from "./Explorer/SelectorExplorer.svelte";
 
 /** @type {Promise<HTMLElement>} */
@@ -75,7 +74,7 @@ export default function elementPicker(backgroundColor = 'rgba(0, 255, 255, 0.3)'
         document.addEventListener('mouseover', ({target})=>{
             if (selectorExplorerContainer.contains(target)) return
             oldTarget = target;
-            selectorExplorer.$set({hoveringNode: target, cssSelector: getCssSelector(target)})
+            selectorExplorer.$set({hoveringNode: target})
             target.classList.add("element-picking")
         }, {capture: true, signal});
 

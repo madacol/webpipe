@@ -1,13 +1,17 @@
 <script>
 import { onDestroy } from "svelte";
+import getCssSelector from "css-selector-generator";
 
 import CheckboxToggle from "./CheckboxToggle.svelte";
 import Modal from "./Modal.svelte";
 
     /**@type {HTMLElement}*/ 
     export let hoveringNode = null;
-    /**@type {string}*/ 
-    export let cssSelector = "";
+
+    $: cssSelector = hoveringNode && getCssSelector(hoveringNode, {
+        blacklist: [".element-picking", "[style=*"],
+        maxCombinations: 10
+    });
 
     $: nodeCoords = hoveringNode?.getBoundingClientRect();
 
