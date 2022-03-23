@@ -25,3 +25,11 @@ export async function sendAttachSignal(observer) {
         observer
     })
 }
+
+// regex to extract selectors
+const tagRegex = /[a-z\-]+/.source
+const idRegex = /#[a-zA-Z0-9\-_]+/.source
+const classRegex = /\.[a-zA-Z0-9\-_]+/.source
+const attrRegex = /\[[a-zA-Z0-9\-_]+(?:='.+?')?\]/.source
+const pseudoClassRegex = /\:[a-z\-]+(?:\([^\)]+\))?/.source
+export const anySelectorRegex = new RegExp(`${tagRegex}|${idRegex}|${classRegex}|${attrRegex}|${pseudoClassRegex}`,'g')
