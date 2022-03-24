@@ -72,16 +72,11 @@ export default function elementPicker(backgroundColor = 'rgba(0, 255, 255, 0.3)'
 
         // set backgroundColor to element directly above pointer
         document.addEventListener('mouseover', ({target})=>{
-            if (selectorExplorerContainer.contains(target)) return
+            if (selectorExplorerContainer.contains(target) || target.tagName === "HTML") return
+            oldTarget?.classList.remove("element-picking")
             oldTarget = target;
             selectorExplorer.$set({hoveringNode: target})
             target.classList.add("element-picking")
-        }, {capture: true, signal});
-
-        // restore original color (if any)
-        document.addEventListener('mouseout', ({relatedTarget})=>{
-            if (selectorExplorerContainer.contains(relatedTarget)) return
-            oldTarget.classList.remove("element-picking")
         }, {capture: true, signal});
 
         // cancel picking element
