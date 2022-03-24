@@ -45,6 +45,7 @@ import SelectorExplorerContent from "./SelectorExplorerContent.svelte";
         z-index: 999999;
         opacity: 0.95;
         font-size: 14px;
+        box-sizing: content-box;
     }
     .open-explorer {
         position: fixed;

@@ -45,9 +45,15 @@
     }
     span {
         cursor: pointer;
+        padding-top: 0.5em;
+        padding-bottom: 0.5em;
         padding-left: 6em;
         max-height: 3.5em;
+        min-height: 1em;
         overflow-x: auto;
+    }
+    span:nth-child(2n) {
+        background-color: rgb(54, 54, 54);
     }
     span:hover {
         background-color: #066

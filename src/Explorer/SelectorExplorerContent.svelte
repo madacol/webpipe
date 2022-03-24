@@ -145,16 +145,16 @@ import InspectorElement from "./InspectorElement.svelte";
         <input type="text" bind:value={ancestorsSelector}>
         <input type="text" bind:value={constructedNodeSelector}>
     </div>
-    <div class="content">
-        <div class="inspectorTree">
+    <div class="content-webpipe">
+        <section class="inspectorTree">
             <InspectorElement bind:hoveringNode element={hoveringNode.parentElement?.parentElement}/>
             <InspectorElement bind:hoveringNode element={hoveringNode.parentElement}/>
             <InspectorElement bind:hoveringNode element={hoveringNode}/>
             {#each hoveringNode.children as child}
                 <InspectorElement bind:hoveringNode element={child}/>
             {/each}
-        </div>
-        <div class="selector">
+        </section>
+        <section class="selector-webpipe">
             <CheckboxToggle
                 label={tag}
                 bind:checked={isTag}
@@ -195,26 +195,30 @@ import InspectorElement from "./InspectorElement.svelte";
                     />
                 </div>
             {/each}
-        </div>
+        </section>
     </div>
 </Modal>
 
 <style>
-    .content {
+    .content-webpipe {
         display: grid;
         grid-template-columns: 3fr 2fr;
         gap: 2em;
+        overflow: auto;
     }
-    .selector {
+    .selector-webpipe {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
         gap: 0.3em;
+        overflow: auto;
     }
     hr {width: 90%;}
     .inspectorTree {
         display: flex;
         flex-direction: column;
-        gap: 1em;
+        background-color: rgb(36, 36, 36);
+        padding: 0 1em;
+        overflow: auto;
     }
 </style>
