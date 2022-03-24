@@ -2,9 +2,10 @@
 import CheckboxToggle from "./CheckboxToggle.svelte";
 import Modal from "./Modal.svelte";
 import { anySelectorRegex } from "../utils";
+import InspectorElement from "./InspectorElement.svelte";
 
     /**@type {HTMLElement}*/
-    export let hoveringNode = null;
+    export let hoveringNode;
     export let isOpen = true;
     export let cssSelector = "";
 
@@ -133,6 +134,7 @@ import { anySelectorRegex } from "../utils";
             ? [...group, value]
             : group.filter((item) => item !== value);
     }
+
 </script>
 
 <Modal on:close={()=>{
@@ -143,52 +145,66 @@ import { anySelectorRegex } from "../utils";
         <input type="text" bind:value={ancestorsSelector}>
         <input type="text" bind:value={constructedNodeSelector}>
     </div>
-
-    <div class="selector">
-        <CheckboxToggle
-            label={tag}
-            bind:checked={isTag}
-        />
-        {#if hoveringNode.id}
+    <div class="content">
+        <div class="inspectorTree">
+            <InspectorElement bind:hoveringNode element={hoveringNode.parentElement.parentElement}/>
+            <InspectorElement bind:hoveringNode element={hoveringNode.parentElement}/>
+            <InspectorElement bind:hoveringNode element={hoveringNode}/>
+            {#each hoveringNode.children as child}
+                <InspectorElement bind:hoveringNode element={child}/>
+            {/each}
+        </div>
+        <div class="selector">
             <CheckboxToggle
-                label={id}
-                bind:checked={isId}
+                label={tag}
+                bind:checked={isTag}
             />
-        {/if}
-        <hr>
-        {#each classes as classString }
-            <div class="classes">
+            {#if hoveringNode.id}
                 <CheckboxToggle
-                    label={classString}
-                    checked={selectedClasses.includes(classString)}
-                    on:change={e=>selectedClasses = updateGroup(e, selectedClasses)}
+                    label={id}
+                    bind:checked={isId}
                 />
-            </div>
-        {/each}
-        <hr>
-        {#each attributes as selector }
-            <div class="attributes">
-                <CheckboxToggle
-                    label={selector}
-                    checked={selectedAttributes.includes(selector)}
-                    on:change={e=>selectedAttributes = updateGroup(e, selectedAttributes)}
-                />
-            </div>
-        {/each}
-        <hr>
-        {#each pseudoClasses as pseudoClass }
-            <div class="pseudo-classes">
-                <CheckboxToggle
-                    label={pseudoClass}
-                    checked={selectedPseudoClasses.includes(pseudoClass)}
-                    on:change={e=>selectedPseudoClasses = updateGroup(e, selectedPseudoClasses)}
-                />
-            </div>
-        {/each}
+            {/if}
+            <hr>
+            {#each classes as classString }
+                <div class="classes">
+                    <CheckboxToggle
+                        label={classString}
+                        checked={selectedClasses.includes(classString)}
+                        on:change={e=>selectedClasses = updateGroup(e, selectedClasses)}
+                    />
+                </div>
+            {/each}
+            <hr>
+            {#each attributes as selector }
+                <div class="attributes">
+                    <CheckboxToggle
+                        label={selector}
+                        checked={selectedAttributes.includes(selector)}
+                        on:change={e=>selectedAttributes = updateGroup(e, selectedAttributes)}
+                    />
+                </div>
+            {/each}
+            <hr>
+            {#each pseudoClasses as pseudoClass }
+                <div class="pseudo-classes">
+                    <CheckboxToggle
+                        label={pseudoClass}
+                        checked={selectedPseudoClasses.includes(pseudoClass)}
+                        on:change={e=>selectedPseudoClasses = updateGroup(e, selectedPseudoClasses)}
+                    />
+                </div>
+            {/each}
+        </div>
     </div>
 </Modal>
 
 <style>
+    .content {
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 2em;
+    }
     .selector {
         display: flex;
         flex-direction: column;
@@ -196,4 +212,9 @@ import { anySelectorRegex } from "../utils";
         gap: 0.3em;
     }
     hr {width: 90%;}
+    .inspectorTree {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+    }
 </style>
