@@ -5,7 +5,7 @@
     export let element
 
     let initialOuterHtml
-    $: {
+    $: if (element) {
         const clone = element.cloneNode()
         clone.classList.remove("element-picking")
         initialOuterHtml = clone.outerHTML.replace(/<\/.*/, "")
@@ -26,7 +26,9 @@
     on:mouseover={onMouseOver} on:focus={onMouseOver}
     on:mouseout={onMouseOut} on:blur={onMouseOut}
 >
-    {initialOuterHtml}
+    {#if element}
+        {initialOuterHtml}
+    {/if}
 </span>
 
 

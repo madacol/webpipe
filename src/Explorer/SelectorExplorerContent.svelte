@@ -147,7 +147,7 @@ import InspectorElement from "./InspectorElement.svelte";
     </div>
     <div class="content">
         <div class="inspectorTree">
-            <InspectorElement bind:hoveringNode element={hoveringNode.parentElement.parentElement}/>
+            <InspectorElement bind:hoveringNode element={hoveringNode.parentElement?.parentElement}/>
             <InspectorElement bind:hoveringNode element={hoveringNode.parentElement}/>
             <InspectorElement bind:hoveringNode element={hoveringNode}/>
             {#each hoveringNode.children as child}
