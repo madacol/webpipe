@@ -39,9 +39,9 @@
 
 <svelte:window on:keydown={handle_keydown}/>
 
-<div class="modal-background" on:click={close}></div>
+<div class="modal-background-webpipe" on:click={close}></div>
 
-<div class="modal" role="dialog" aria-modal="true" bind:this={modal}>
+<div class="modal-webpipe" role="dialog" aria-modal="true" bind:this={modal}>
     <slot name="header"></slot>
     <hr>
     <slot></slot>
@@ -52,7 +52,7 @@
 </div>
 
 <style>
-    .modal-background {
+    .modal-background-webpipe {
         position: fixed;
         top: 0;
         left: 0;
@@ -62,7 +62,7 @@
         /* pointer-events: none; */
     }
 
-    .modal {
+    .modal-webpipe {
         position: fixed;
         left: 50%;
         top: 50%;
