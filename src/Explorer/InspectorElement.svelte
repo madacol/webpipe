@@ -52,6 +52,9 @@
         min-height: 1em;
         overflow-x: auto;
     }
+    span:empty {
+        display: none;
+    }
     span:nth-child(2n) {
         background-color: rgb(54, 54, 54);
     }
