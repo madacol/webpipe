@@ -6,10 +6,6 @@ import SelectorExplorerContent from "./SelectorExplorerContent.svelte";
     /**@type {HTMLElement}*/ 
     export let hoveringNode = null;
 
-    $: cssSelector = hoveringNode && getCssSelector(hoveringNode, {
-        blacklist: [".element-picking", "[style=*"],
-        maxCombinations: 10
-    });
 
     $: nodeCoords = hoveringNode?.getBoundingClientRect();
 
@@ -27,13 +23,13 @@ import SelectorExplorerContent from "./SelectorExplorerContent.svelte";
 {#if hoveringNode}
     <div class="selectorExplorer">
         {#if isOpen}
-            <SelectorExplorerContent bind:hoveringNode {cssSelector} bind:isOpen />
+            <SelectorExplorerContent bind:hoveringNode bind:isOpen />
         {:else}
             <span class="open-explorer" role="button" on:click={openExplorer} style="
                 left: {Math.max(nodeCoords.left, 0)}px;
                 top: {Math.max(nodeCoords.top, 28)}px;
             ">
-                {cssSelector}
+                {getCssSelector(hoveringNode, {blacklist: [".element-picking", "[style=*"],maxCombinations: 10})}
             </span>
         {/if}
     </div>

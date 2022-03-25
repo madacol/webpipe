@@ -3,21 +3,33 @@ import CheckboxToggle from "./CheckboxToggle.svelte";
 import Modal from "./Modal.svelte";
 import { anySelectorRegex } from "../utils";
 import InspectorElement from "./InspectorElement.svelte";
+import getCssSelector from "css-selector-generator";
 
     /**@type {HTMLElement}*/
     export let hoveringNode;
     export let isOpen = true;
-    export let cssSelector = "";
 
-    let /**@type {string}*/ ancestorsSelector;
-    let /**@type {string}*/ nodeSelector;
-    $: if (cssSelector) {
+    let commitedSelector = "";
+    let nodeSelector = "";
+    let hasCommited = false;
+    $: selector: {
+        const cssSelector = getCssSelector(hoveringNode, {
+            blacklist: [".element-picking", "[style=*"],
+            maxCombinations: 100,
+            root: document.querySelector(hasCommited ? commitedSelector : "body"),
+        })
+        if (hasCommited) {
+            nodeSelector = cssSelector;
+            console.log(cssSelector);
+            break selector;
+        }
         const wholeNodeSelectorRegex = new RegExp(`(?:${anySelectorRegex.source})+`,'g')
         const nodeSelectorMatch = Array.from(cssSelector.matchAll(wholeNodeSelectorRegex)).at(-1)
         console.log(cssSelector, nodeSelectorMatch);
         nodeSelector = nodeSelectorMatch[0]
-        ancestorsSelector = cssSelector.slice(0, nodeSelectorMatch.index)
+        commitedSelector = cssSelector.slice(0, nodeSelectorMatch.index)
     }
+
     $: tag = hoveringNode.tagName.toLowerCase()
     let isId = false;
     let isTag = false;
@@ -117,7 +129,7 @@ import InspectorElement from "./InspectorElement.svelte";
     const getconstructedNodeSelector = ()=> constructedNodeSelector = tagSelector + idSelector + selectedClasses.join("") + selectedAttributes.join("") + selectedPseudoClasses.join("")
     $: tagSelector, idSelector, selectedClasses, selectedAttributes, selectedPseudoClasses, getconstructedNodeSelector()
 
-    $: selector = ancestorsSelector + constructedNodeSelector
+    $: selector = commitedSelector + " " + constructedNodeSelector
     $: {
         document.querySelectorAll(".element-picking").forEach(x=>x.classList.remove("element-picking"))
         try {
@@ -141,66 +153,79 @@ import InspectorElement from "./InspectorElement.svelte";
     isOpen=false
     document.querySelectorAll(".element-picking").forEach(x=>x.classList.remove("element-picking"))
 }}>
-    <div slot="header">
-        <input type="text" bind:value={ancestorsSelector}>
-        <input type="text" bind:value={constructedNodeSelector}>
-    </div>
+    <span slot="header">Selector Explorer</span>
     <div class="content-webpipe">
-        <section class="inspectorTree">
-            <InspectorElement bind:hoveringNode element={hoveringNode.parentElement?.parentElement}/>
-            <InspectorElement bind:hoveringNode element={hoveringNode.parentElement}/>
-            <InspectorElement bind:hoveringNode element={hoveringNode}/>
-            {#each hoveringNode.children as child}
-                <InspectorElement bind:hoveringNode element={child}/>
-            {/each}
-        </section>
-        <section class="selector-webpipe">
-            <CheckboxToggle
-                label={tag}
-                bind:checked={isTag}
-            />
-            {#if hoveringNode.id}
+        <div>
+            <input type="text" bind:value={commitedSelector}>
+            <button on:click={()=>{
+                hasCommited = true;
+                commitedSelector += " " + constructedNodeSelector;
+            }}>{"<-persist"}</button>
+            <input type="text" bind:value={constructedNodeSelector}>
+        </div>
+        <hr>
+        <div class="modifiers-webpipe">
+            <section class="inspectorTree">
+                <InspectorElement bind:hoveringNode element={hoveringNode.parentElement?.parentElement}/>
+                <InspectorElement bind:hoveringNode element={hoveringNode.parentElement}/>
+                <InspectorElement bind:hoveringNode element={hoveringNode}/>
+                {#each hoveringNode.children as child}
+                    <InspectorElement bind:hoveringNode element={child}/>
+                {/each}
+            </section>
+            <section class="selector-webpipe">
                 <CheckboxToggle
-                    label={id}
-                    bind:checked={isId}
+                    label={tag}
+                    bind:checked={isTag}
                 />
-            {/if}
-            <hr>
-            {#each classes as classString }
-                <div class="classes">
+                {#if hoveringNode.id}
                     <CheckboxToggle
-                        label={classString}
-                        checked={selectedClasses.includes(classString)}
-                        on:change={e=>selectedClasses = updateGroup(e, selectedClasses)}
+                        label={id}
+                        bind:checked={isId}
                     />
-                </div>
-            {/each}
-            <hr>
-            {#each attributes as selector }
-                <div class="attributes">
-                    <CheckboxToggle
-                        label={selector}
-                        checked={selectedAttributes.includes(selector)}
-                        on:change={e=>selectedAttributes = updateGroup(e, selectedAttributes)}
-                    />
-                </div>
-            {/each}
-            <hr>
-            {#each pseudoClasses as pseudoClass }
-                <div class="pseudo-classes">
-                    <CheckboxToggle
-                        label={pseudoClass}
-                        checked={selectedPseudoClasses.includes(pseudoClass)}
-                        on:change={e=>selectedPseudoClasses = updateGroup(e, selectedPseudoClasses)}
-                    />
-                </div>
-            {/each}
-        </section>
+                {/if}
+                <hr>
+                {#each classes as classString }
+                    <div class="classes">
+                        <CheckboxToggle
+                            label={classString}
+                            checked={selectedClasses.includes(classString)}
+                            on:change={e=>selectedClasses = updateGroup(e, selectedClasses)}
+                        />
+                    </div>
+                {/each}
+                <hr>
+                {#each attributes as selector }
+                    <div class="attributes">
+                        <CheckboxToggle
+                            label={selector}
+                            checked={selectedAttributes.includes(selector)}
+                            on:change={e=>selectedAttributes = updateGroup(e, selectedAttributes)}
+                        />
+                    </div>
+                {/each}
+                <hr>
+                {#each pseudoClasses as pseudoClass }
+                    <div class="pseudo-classes">
+                        <CheckboxToggle
+                            label={pseudoClass}
+                            checked={selectedPseudoClasses.includes(pseudoClass)}
+                            on:change={e=>selectedPseudoClasses = updateGroup(e, selectedPseudoClasses)}
+                        />
+                    </div>
+                {/each}
+            </section>
+        </div>
     </div>
 </Modal>
 
 <style>
     .content-webpipe {
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+    }
+    .modifiers-webpipe {
         display: grid;
         grid-template-columns: 3fr 2fr;
         gap: 2em;
@@ -220,5 +245,9 @@ import InspectorElement from "./InspectorElement.svelte";
         background-color: rgb(36, 36, 36);
         padding: 0 1em;
         overflow: auto;
+    }
+    button {
+        color: black;
+        background-color: white;
     }
 </style>
