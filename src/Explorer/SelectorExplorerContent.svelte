@@ -12,7 +12,7 @@ import getCssSelector from "css-selector-generator";
     let commitedSelector = "";
     let nodeSelector = "";
     let hasCommited = false;
-    $: selector: {
+    $: {
         const cssSelector = getCssSelector(hoveringNode, {
             blacklist: [".element-picking", "[style=*"],
             maxCombinations: 100,
@@ -21,7 +21,7 @@ import getCssSelector from "css-selector-generator";
         if (hasCommited) {
             nodeSelector = cssSelector;
             console.log(cssSelector);
-            break selector;
+            break $;
         }
         const wholeNodeSelectorRegex = new RegExp(`(?:${anySelectorRegex.source})+`,'g')
         const nodeSelectorMatch = Array.from(cssSelector.matchAll(wholeNodeSelectorRegex)).at(-1)
@@ -76,12 +76,6 @@ import getCssSelector from "css-selector-generator";
      */
 
 
-    /**
-     * Below we do the checkbox bind:groups but traversing components
-     * https://github.com/sveltejs/svelte/issues/2308#issuecomment-1005942571
-     * https://svelte.dev/repl/02d60142a1cc470bb43e0cfddaba4af1?version=3.38.3
-     */
-
     $: id = "#"+hoveringNode.id
     $: idSelector = isId ? id : "";
     $: tagSelector = isTag ? tag : "";
@@ -93,14 +87,14 @@ import getCssSelector from "css-selector-generator";
                           .map(attr=>`[${attr.name}='${attr.value}']`)
 
     let pseudoClasses = [];
-    $: if (hoveringNode) pseudo: {
+    $: if (hoveringNode) {
         pseudoClasses = [];
         let node = hoveringNode
         if (node.previousElementSibling == null) pseudoClasses.push(":first-child", ":first-of-type")
         if (node.nextElementSibling == null) pseudoClasses.push(":last-child", ":last-of-type")
         if (pseudoClasses.length === 4) {   // is first and last, hence, only child
             pseudoClasses.push(":only-child", ":only-of-type")
-            break pseudo;
+            break $;
         }
         let childIndex=1;
         let typeIndex=1;
