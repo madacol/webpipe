@@ -54,7 +54,7 @@ export default function elementPicker(backgroundColor = 'rgba(0, 255, 255, 0.3)'
                 elementPickerConstroller.abort(reason)
             }
             oldTarget.classList.remove("element-picking")
-            selectorExplorer.$set({hoveringNode: null})
+            selectorExplorer.$destroy()
             stylesheet.remove()
             selectorExplorerContainer.remove()
         }
