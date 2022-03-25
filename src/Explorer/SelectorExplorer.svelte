@@ -31,7 +31,7 @@ import SelectorExplorerContent from "./SelectorExplorerContent.svelte";
         {:else}
             <span class="open-explorer" role="button" on:click={openExplorer} style="
                 left: {Math.max(nodeCoords.left, 0)}px;
-                top: {Math.max(nodeCoords.top, 0)}px;
+                top: {Math.max(nodeCoords.top, 28)}px;
             ">
                 {cssSelector}
             </span>
@@ -53,7 +53,7 @@ import SelectorExplorerContent from "./SelectorExplorerContent.svelte";
         max-height: 2em;
         overflow: auto;
         display: inline-block;
-        transform: translate(0,-50%);
+        transform: translate(0,-100%);
         background-color: rgb(44, 44, 44);
         color: white;
     }

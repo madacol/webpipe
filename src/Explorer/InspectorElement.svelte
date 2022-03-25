@@ -4,11 +4,11 @@
     /**@type {HTMLElement}*/
     export let element
 
-    let initialOuterHtml
+    let openingOuterHtml
     $: if (element) {
         const clone = element.cloneNode()
         clone.classList.remove("element-picking")
-        initialOuterHtml = clone.outerHTML.replace(/<\/.*/, "")
+        openingOuterHtml = clone.outerHTML.replace(/<\/.*/, "") // remove closing tag
     }
 
     function onMouseOver() {
@@ -27,7 +27,7 @@
     on:mouseout={onMouseOut} on:blur={onMouseOut}
 >
     {#if element}
-        {initialOuterHtml}
+        {openingOuterHtml}
     {/if}
 </span>
 

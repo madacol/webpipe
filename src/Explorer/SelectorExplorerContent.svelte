@@ -73,10 +73,10 @@ import InspectorElement from "./InspectorElement.svelte";
     $: id = "#"+hoveringNode.id
     $: idSelector = isId ? id : "";
     $: tagSelector = isTag ? tag : "";
-    $: classes = Array.from(hoveringNode.classList || []).filter(x=>x!=="element-picking").map(x=>"."+x)
+    $: classes = Array.from(hoveringNode.classList).filter(x=>x!=="element-picking").map(x=>"."+x)
 
     // attributes
-    $: attributes = Object.values(hoveringNode.attributes || [])
+    $: attributes = Object.values(hoveringNode.attributes)
                           .filter(attr=>!["class","style", "id"].includes(attr.name))
                           .map(attr=>`[${attr.name}='${attr.value}']`)
 
