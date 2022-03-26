@@ -1,4 +1,3 @@
-import getCssSelector from "css-selector-generator";
 import elementPicker from "./element-picker"
 
 export function getNodeFromSelector(cssSelector) {
@@ -61,8 +60,7 @@ function observeNode(idx) {
 }
 
 export async function observe() {
-    const node = await elementPicker("#00bbff70")
-    const cssSelector = getCssSelector(node)
+    const {node, cssSelector} = await elementPicker("#00bbff70")
     const idx = observers.push({cssSelector}) - 1
     const createPayload = {
         action: "create",
@@ -83,9 +81,7 @@ export function updateSelector({cssSelector, idx}) {
 }
 
 export async function getSelector() {
-    const node = await elementPicker("#00bbff70")
-    const cssSelector = getCssSelector(node)
-    console.log(cssSelector, node);
+    const {cssSelector} = await elementPicker("#00bbff70")
 
     await browser.runtime.sendMessage({
         action: "assignSelector",

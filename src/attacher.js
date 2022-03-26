@@ -1,4 +1,3 @@
-import getCssSelector from "css-selector-generator";
 import elementPicker, { pickingPromise } from "./element-picker";
 import { getNodeFromSelector } from "./observer";
 
@@ -77,8 +76,7 @@ export async function update({textContent, idx}) {
 }
 
 export async function attach({observer}) {
-    const node = await elementPicker("#ffbb0070")
-    const cssSelector = getCssSelector(node)
+    const {node, cssSelector} = await elementPicker("#ffbb0070")
     const idx = elementsAttached.push({cssSelector, node}) - 1
     const payload = {
         action: "attach",

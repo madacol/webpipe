@@ -1,3 +1,4 @@
+import getCssSelector from "css-selector-generator";
 import SelectorExplorer from "./Explorer/SelectorExplorer.svelte";
 
 /** @type {Promise<HTMLElement>} */
@@ -61,13 +62,28 @@ export default function elementPicker(backgroundColor = 'rgba(0, 255, 255, 0.3)'
         const signal = elementPickerConstroller.signal
         signal.onabort = ()=>reset("aborted")
 
+        selectorExplorer.$on("pick", e=>{
+            const cssSelector = e.detail
+            reset("success")
+            resolve({
+                node: document.querySelector(cssSelector),
+                cssSelector
+            })
+        })
         // return target node
         document.addEventListener('click', (event)=>{
             if (selectorExplorerContainer.contains(event.target)) return
             event.preventDefault();
             event.stopPropagation();
             reset("success")
-            resolve(event.target)
+            const cssSelector = getCssSelector(event.target, {
+                blacklist: [".element-picking", "[style=*"],
+                maxCombinations: 100,
+            })
+            resolve({
+                node: event.target,
+                cssSelector
+            })
         }, {capture: true, signal});
 
         // set backgroundColor to element directly above pointer

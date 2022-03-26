@@ -4,6 +4,7 @@ import Modal from "./Modal.svelte";
 import { anySelectorRegex } from "../utils";
 import InspectorElement from "./InspectorElement.svelte";
 import getCssSelector from "css-selector-generator";
+import { createEventDispatcher } from "svelte";
 
     /**@type {HTMLElement}*/
     export let hoveringNode;
@@ -29,6 +30,8 @@ import getCssSelector from "css-selector-generator";
         nodeSelector = nodeSelectorMatch[0]
         commitedSelector = cssSelector.slice(0, nodeSelectorMatch.index)
     }
+    const dispatch = createEventDispatcher()
+
 
     $: tag = hoveringNode.tagName.toLowerCase()
     let isId = false;
@@ -149,13 +152,14 @@ import getCssSelector from "css-selector-generator";
 }}>
     <span slot="header">Selector Explorer</span>
     <div class="content-webpipe">
-        <div>
+        <div class="selector-webpipe">
             <input type="text" bind:value={commitedSelector}>
             <button on:click={()=>{
                 hasCommited = true;
                 commitedSelector += " " + constructedNodeSelector;
             }}>{"<-persist"}</button>
             <input type="text" bind:value={constructedNodeSelector}>
+            <button on:click={()=>dispatch("pick", selector)}>pick</button>
         </div>
         <hr>
         <div class="modifiers-webpipe">
@@ -167,7 +171,7 @@ import getCssSelector from "css-selector-generator";
                     <InspectorElement bind:hoveringNode element={child}/>
                 {/each}
             </section>
-            <section class="selector-webpipe">
+            <section class="selector-tweaker-webpipe">
                 <CheckboxToggle
                     label={tag}
                     bind:checked={isTag}
@@ -219,13 +223,17 @@ import getCssSelector from "css-selector-generator";
         flex-direction: column;
         overflow: auto;
     }
+    .selector-webpipe {
+        display: flex;
+        gap: 1em;
+    }
     .modifiers-webpipe {
         display: grid;
         grid-template-columns: 3fr 2fr;
         gap: 2em;
         overflow: auto;
     }
-    .selector-webpipe {
+    .selector-tweaker-webpipe {
         display: flex;
         flex-direction: column;
         align-items: flex-start;

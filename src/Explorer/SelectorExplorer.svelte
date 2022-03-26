@@ -23,7 +23,7 @@ import SelectorExplorerContent from "./SelectorExplorerContent.svelte";
 {#if hoveringNode}
     <div class="selectorExplorer">
         {#if isOpen}
-            <SelectorExplorerContent bind:hoveringNode bind:isOpen />
+            <SelectorExplorerContent on:pick bind:hoveringNode bind:isOpen />
         {:else}
             <span class="open-explorer" role="button" on:click={openExplorer} style="
                 left: {Math.max(nodeCoords.left, 0)}px;
