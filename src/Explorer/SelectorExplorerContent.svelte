@@ -183,35 +183,35 @@ import { createEventDispatcher } from "svelte";
                     />
                 {/if}
                 <hr>
-                {#each classes as classString }
-                    <div class="classes">
+                <div class="classes">
+                    {#each classes as classString }
                         <CheckboxToggle
                             label={classString}
                             checked={selectedClasses.includes(classString)}
                             on:change={e=>selectedClasses = updateGroup(e, selectedClasses)}
                         />
-                    </div>
-                {/each}
+                    {/each}
+                </div>
                 <hr>
-                {#each attributes as selector }
-                    <div class="attributes">
+                <div class="attributes">
+                    {#each attributes as selector }
                         <CheckboxToggle
                             label={selector}
                             checked={selectedAttributes.includes(selector)}
                             on:change={e=>selectedAttributes = updateGroup(e, selectedAttributes)}
                         />
-                    </div>
-                {/each}
+                    {/each}
+                </div>
                 <hr>
-                {#each pseudoClasses as pseudoClass }
-                    <div class="pseudo-classes">
+                <div class="pseudo-classes">
+                    {#each pseudoClasses as pseudoClass }
                         <CheckboxToggle
                             label={pseudoClass}
                             checked={selectedPseudoClasses.includes(pseudoClass)}
                             on:change={e=>selectedPseudoClasses = updateGroup(e, selectedPseudoClasses)}
                         />
-                    </div>
-                {/each}
+                    {/each}
+                </div>
             </section>
         </div>
     </div>
@@ -238,7 +238,7 @@ import { createEventDispatcher } from "svelte";
         flex-direction: column;
         align-items: flex-start;
         gap: 0.3em;
-        overflow: auto;
+        overflow: clip auto;
     }
     hr {width: 90%;}
     .inspectorTree {
@@ -251,5 +251,12 @@ import { createEventDispatcher } from "svelte";
     button {
         color: black;
         background-color: white;
+    }
+    .classes, .attributes, .pseudo-classes {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        gap: 0.3em;
+        width: 100%;
     }
 </style>

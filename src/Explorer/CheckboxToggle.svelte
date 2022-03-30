@@ -4,7 +4,7 @@
     export let /**@type {string}*/ label;
 </script>
 
-<div>
+<div class="checkbox-webpipe">
     <label>
         <input
             on:change
@@ -15,13 +15,14 @@
         <div>
             <span/>
         </div>
-        <span>&nbsp;{label}</span>
+        <span>{label}</span>
     </label>
 </div>
 
 <style>
 
-div {
+.checkbox-webpipe {
+    max-width: 100%;
     display: flex;
     justify-content: center;
 }
@@ -31,11 +32,16 @@ label {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 0.7em;
+    width: 100%;
 }
 label > span {
-    max-width: 400px;
     overflow: auto;
     user-select: text;
+    flex: 1 1 max-content;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2em;
 }
 
 
@@ -52,6 +58,7 @@ label > div {
     position: relative;
     width: 2.4em;
     height: 1.3em;
+    flex: 0 0 auto;
 }
 
 /* The slider */
