@@ -25,7 +25,7 @@ import SelectorExplorerContent from "./SelectorExplorerContent.svelte";
         {#if isOpen}
             <SelectorExplorerContent on:pick bind:hoveringNode bind:isOpen />
         {:else}
-            <span class="open-explorer" role="button" on:click={openExplorer} style="
+            <span class="selector-preview" role="button" on:click={openExplorer} style="
                 left: {Math.max(nodeCoords.left, 0)}px;
                 top: {Math.max(nodeCoords.top, 28)}px;
             ">
@@ -43,7 +43,7 @@ import SelectorExplorerContent from "./SelectorExplorerContent.svelte";
         font-size: 14px;
         box-sizing: content-box;
     }
-    .open-explorer {
+    .selector-preview {
         position: fixed;
         max-width: 300px;
         max-height: 2em;
