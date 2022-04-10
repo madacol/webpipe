@@ -21,12 +21,10 @@ import { createEventDispatcher } from "svelte";
         })
         if (hasCommited) {
             nodeSelector = cssSelector;
-            console.log(cssSelector);
             break $;
         }
         const wholeNodeSelectorRegex = new RegExp(`(?:${anySelectorRegex.source})+`,'g')
         const nodeSelectorMatch = Array.from(cssSelector.matchAll(wholeNodeSelectorRegex)).at(-1)
-        console.log(cssSelector, nodeSelectorMatch);
         nodeSelector = nodeSelectorMatch[0]
         commitedSelector = cssSelector.slice(0, nodeSelectorMatch.index)
     }
@@ -151,7 +149,6 @@ import { createEventDispatcher } from "svelte";
                     .forEach(x=>x.classList.remove("element-picking"))
         } catch (error) {console.error(error);}
     }
-    $: console.log(selector);
 
     function updateGroup({ target: { value, checked } }, group) {
         return (checked)
