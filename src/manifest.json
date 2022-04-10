@@ -1,5 +1,5 @@
 {
-    "description": "Terminal pipes in the web",
+    "description": "Real-time copy/paste/click across web pages",
     "manifest_version": 2,
     "name": "webpipe",
     "version": "0.0.1",
