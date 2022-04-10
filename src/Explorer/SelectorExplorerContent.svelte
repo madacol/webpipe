@@ -93,15 +93,29 @@ import { createEventDispatcher } from "svelte";
     $: if (hoveringNode) {
         pseudoClasses = [];
         let node = hoveringNode
-        if (node.previousElementSibling == null) pseudoClasses.push(":first-child", ":first-of-type")
-        if (node.nextElementSibling == null) pseudoClasses.push(":last-child", ":last-of-type")
-        if (pseudoClasses.length === 4) {   // is first and last, hence, only child
+        if (!node.previousElementSibling) pseudoClasses.push(":first-child", ":first-of-type")
+        if (!node.nextElementSibling) pseudoClasses.push(":last-child", ":last-of-type")
+        else {
+            // checking if it is `:last-of-type`
+            let _node = hoveringNode;
+            let isLastOfType = true;
+            while (_node=_node.nextElementSibling) { // while nextElementSibling exist
+                if (_node.tagName.toLowerCase() === tag) {
+                    isLastOfType = false
+                    break;
+                }
+            };
+            if (isLastOfType) pseudoClasses.push(":last-of-type")
+        }
+        if (node.previousElementSibling == null && node.nextElementSibling == null) {
             pseudoClasses.push(":only-child", ":only-of-type")
             break $;
         }
+
+        // getting index for nth-... selectors
         let childIndex=1;
         let typeIndex=1;
-        while (node=node.previousElementSibling) {
+        while (node=node.previousElementSibling) { // while previousElementSibling exist
             childIndex++;
             if (node.tagName.toLowerCase() === tag) typeIndex++
         };
@@ -111,6 +125,7 @@ import { createEventDispatcher } from "svelte";
             `:nth-last-child(${siblingsCount - childIndex + 1})`,
             `:nth-of-type(${typeIndex})`
         )
+
     }
 
     /**
