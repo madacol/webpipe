@@ -116,12 +116,10 @@
                 // Evaluate the function
                 function evaluate () {
                     const functionText = editor.getValue();
-                    const inputs = {};
-                    for (input of inputsDiv.children){
-                        inputs[input.id] = input.value;
-                    };
                     const function_ = eval(functionText)
                     const paramNames = getParamNames(function_);
+
+                    // Extract input's value and add any missing input
                     const params = []
                     paramNames.forEach(name => {
                         let input = document.getElementById(`${name}-input`);
@@ -132,17 +130,31 @@
                         input = addInput(name);
                         params.push(input.value);
                     });
+
+                    // Remove any unused input
                     for (input of inputsDiv.children){
                         if(!paramNames.some(name => name === input.id.split('-')[0])){
                             input.remove();
                         }
                     };
+
+                    // Execute function and get the outputs
                     const outputs = function_(...params);
+
+                    // Update outputs and add any missing output
                     for (let name in outputs) {
                         let output = outputsDiv.querySelector(`#${name}-output`);
                         if(!output) output = addOutput(name);
                         output.innerText = outputs[name];
                     }
+
+                    // Remove any unused output
+                    for (outputDiv of outputsDiv.children){
+                        const output = outputDiv.querySelector("span");
+                        if(!Object.keys(outputs).some(name => name === output.id.split('-')[0])){
+                            outputDiv.remove();
+                        }
+                    };
                 };
                 for (divInput of inputsDiv.children){
                     const input = divInput.firstElementChild;
