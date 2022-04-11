@@ -1,11 +1,11 @@
 <!--
     This is a webpage that's divided in 3 sections
 
-    - On the center section, there is a monaco editor that will have a function template with some parameters
-    - On the left section, there is a list of inputs that will be used as the parameters of function in the editor.
+    - On the center section, there is a monaco editor that has a function template with some parameters
+    - On the left section, there is a list of inputs that is used as the parameters of the function in the editor.
         There's a button to add a new parameter (input), each parameter can be removed,
-        and the function template will be updated accordingly
-    - On the right section, it will be shown the result of the function
+        and the function template is updated accordingly
+    - On the right section, it is shown the result of the function
 
     The function (the editor's inner text) is going to be evaluated every time any input changes,
     and the result shown in the right section
@@ -21,7 +21,11 @@
             require(['vs/editor/editor.main'], function () {
                 // Initialize the editor
                 editor = monaco.editor.create(document.getElementById('editor'), {
-                    value: '(a, b) => a + b',
+                    value: `(inputText) => {
+    return {
+        reversedText: inputText.split('').reverse().join(''),
+    }
+}`,
                     language: 'javascript',
                     theme: 'vs-dark'
                 });
@@ -50,68 +54,97 @@
                 flex-basis: 300px;
                 flex-grow: 1;
             }
-            #inputs, #result {
+            #inputs, #outputs {
                 flex-basis: 100px;
                 flex-grow: 1;
+                display: flex;
+                flex-direction: column;
             }
-            .input {
+            .output {
                 display: flex;
             }
         </style>
     </head>
     <body>
         <div id="container">
-            <div id="inputs">
-                <button id="addInput">Add input</button>
-                <div id="inputsList">
-                    <div class="input">
-                        <input type="text" id="input1" placeholder="Input 1"/>
-                        <button onclick="document.getElementById('input1').parentElement.remove()">x</button>
-                    </div>
-                    <div class="input">
-                        <input type="text" id="input2" placeholder="Input 2"/>
-                        <button onclick="document.getElementById('input2').parentElement.remove()">x</button>
-                    </div>
-                </div>
-            </div>
+            <div id="inputs"></div>
             <div id="editor"></div>
-            <div id="result"></div>
+            <div id="outputs"></div>
             <script>
-                const inputs = document.getElementById('inputs');
-                const inputsList = document.getElementById('inputsList');
-                const result = document.getElementById('result');
+                const inputsDiv = document.getElementById('inputs');
+                const outputsDiv = document.getElementById('outputs');
+
+                // https://stackoverflow.com/questions/1007981/how-to-get-function-parameter-names-values-dynamically
+                const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+                const ARGUMENT_NAMES = /([^\s,]+)/g;
+                /**
+                 * @return {string[]}
+                 */
+                function getParamNames(func) {
+                    const fnStr = func.toString().replace(STRIP_COMMENTS, '');
+                    let result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+                    if(result === null)
+                        result = [];
+                    return result;
+                }
 
                 // Add input
-                const addInput = document.getElementById('addInput');
-                addInput.addEventListener('click', () => {
-                    const i = inputsList.children.length + 1;
+                function addInput(name) {
                     const input = document.createElement('input');
                     input.type = 'text';
-                    input.placeholder = 'Input ' + i;
-                    input.id = 'input' + i;
+                    input.placeholder = name;
+                    input.id = `${name}-input`;
                     input.addEventListener('input', evaluate);
-                    const button = document.createElement('button');
-                    button.innerText = "x"
+                    inputsDiv.appendChild(input);
+                    return input
+                }
+
+                // Add output
+                function addOutput(name) {
+                    const output = document.createElement('span');
+                    output.id = `${name}-output`;
+                    const label = document.createElement('label');
+                    label.innerText = `${name}: `;
                     const div = document.createElement('div');
-                    button.addEventListener('click', ()=>div.remove());
-                    div.class = "input"
-                    div.appendChild(input);
-                    div.appendChild(button);
-                    inputsList.appendChild(div);
-                });
+                    div.class = "output"
+                    div.appendChild(label);
+                    div.appendChild(output);
+                    outputsDiv.appendChild(div);
+                    return output;
+                }
 
                 // Evaluate the function
                 function evaluate () {
                     const functionText = editor.getValue();
-                    const inputsText = [];
-                    for (divInput of inputsList.children){
-                        const input = divInput.firstElementChild;
-                        inputsText.push(input.value);
+                    const inputs = {};
+                    for (input of inputsDiv.children){
+                        inputs[input.id] = input.value;
                     };
-                    console.log(functionText, inputsText);
-                    result.innerText = eval(functionText)(...inputsText);
+                    const function_ = eval(functionText)
+                    const paramNames = getParamNames(function_);
+                    const params = []
+                    paramNames.forEach(name => {
+                        let input = document.getElementById(`${name}-input`);
+                        if(input){
+                            params.push(input.value);
+                            return;
+                        }
+                        input = addInput(name);
+                        params.push(input.value);
+                    });
+                    for (input of inputsDiv.children){
+                        if(!paramNames.some(name => name === input.id.split('-')[0])){
+                            input.remove();
+                        }
+                    };
+                    const outputs = function_(...params);
+                    for (let name in outputs) {
+                        let output = outputsDiv.querySelector(`#${name}-output`);
+                        if(!output) output = addOutput(name);
+                        output.innerText = outputs[name];
+                    }
                 };
-                for (divInput of inputsList.children){
+                for (divInput of inputsDiv.children){
                     const input = divInput.firstElementChild;
                     input.addEventListener('input', evaluate);
                 };
