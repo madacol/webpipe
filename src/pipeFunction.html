@@ -27,140 +27,203 @@
     }
 }`,
                     language: 'javascript',
-                    theme: 'vs-dark'
+                    theme: 'vs-dark',
+                    scrollBeyondLastLine: false,
                 });
                 // Update the function when the editor changes
-                editor.onDidChangeModelContent(evaluate);
-                evaluate()
+                editor.onDidChangeModelContent(onEditorChange);
+                onEditorChange()
             });
         </script>
         <style>
             body {
+                display: flex;
+                flex-direction: column;
                 width: 100vw;
                 min-width: 300px;
                 height: 100vh;
                 margin: 0;
             }
             #container {
+                flex-grow: 1;
                 box-sizing: border-box;
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1em;
-                width: 100%;
-                height: 100%;
-                padding: 2em;
+                margin: 2em;
             }
             #editor {
-                flex-basis: 300px;
-                flex-grow: 1;
+                flex-basis: 500px;
+                flex-grow: 2;
+                min-height: 400px;
             }
             #inputs, #outputs {
-                flex-basis: 100px;
+                flex-basis: 200px;
                 flex-grow: 1;
                 display: flex;
                 flex-direction: column;
+                gap: 1em;
             }
-            .output {
-                display: flex;
+            .output-label {
+                font-size: 0.75em;
+            }
+            #error {
+                visibility: hidden;
+                background-color: rgb(255, 100, 100);
+                text-align: center;
+                margin: 0;
+                padding: 0.5em;
             }
         </style>
     </head>
     <body>
+        <h3 id="error">─</h3>
         <div id="container">
             <div id="inputs"></div>
             <div id="editor"></div>
             <div id="outputs"></div>
-            <script>
-                const inputsDiv = document.getElementById('inputs');
-                const outputsDiv = document.getElementById('outputs');
-
-                // https://stackoverflow.com/questions/1007981/how-to-get-function-parameter-names-values-dynamically
-                const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-                const ARGUMENT_NAMES = /([^\s,]+)/g;
-                /**
-                 * @return {string[]}
-                 */
-                function getParamNames(func) {
-                    const fnStr = func.toString().replace(STRIP_COMMENTS, '');
-                    let result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
-                    if(result === null)
-                        result = [];
-                    return result;
-                }
-
-                // Add input
-                function addInput(name) {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.placeholder = name;
-                    input.id = `${name}-input`;
-                    input.addEventListener('input', evaluate);
-                    inputsDiv.appendChild(input);
-                    return input
-                }
-
-                // Add output
-                function addOutput(name) {
-                    const output = document.createElement('span');
-                    output.id = `${name}-output`;
-                    const label = document.createElement('label');
-                    label.innerText = `${name}: `;
-                    const div = document.createElement('div');
-                    div.class = "output"
-                    div.appendChild(label);
-                    div.appendChild(output);
-                    outputsDiv.appendChild(div);
-                    return output;
-                }
-
-                // Evaluate the function
-                function evaluate () {
-                    const functionText = editor.getValue();
-                    const function_ = eval(functionText)
-                    const paramNames = getParamNames(function_);
-
-                    // Extract input's value and add any missing input
-                    const params = []
-                    paramNames.forEach(name => {
-                        let input = document.getElementById(`${name}-input`);
-                        if(input){
-                            params.push(input.value);
-                            return;
-                        }
-                        input = addInput(name);
-                        params.push(input.value);
-                    });
-
-                    // Remove any unused input
-                    for (input of inputsDiv.children){
-                        if(!paramNames.some(name => name === input.id.split('-')[0])){
-                            input.remove();
-                        }
-                    };
-
-                    // Execute function and get the outputs
-                    const outputs = function_(...params);
-
-                    // Update outputs and add any missing output
-                    for (let name in outputs) {
-                        let output = outputsDiv.querySelector(`#${name}-output`);
-                        if(!output) output = addOutput(name);
-                        output.innerText = outputs[name];
-                    }
-
-                    // Remove any unused output
-                    for (outputDiv of outputsDiv.children){
-                        const output = outputDiv.querySelector("span");
-                        if(!Object.keys(outputs).some(name => name === output.id.split('-')[0])){
-                            outputDiv.remove();
-                        }
-                    };
-                };
-                for (divInput of inputsDiv.children){
-                    const input = divInput.firstElementChild;
-                    input.addEventListener('input', evaluate);
-                };
-            </script>
         </div>
+        <script>
+            const inputsDiv = document.getElementById('inputs');
+            const outputsDiv = document.getElementById('outputs');
+            const errorDiv = document.getElementById('error');
+
+            let pipeFunction;
+            let paramNames;
+
+            function executeFunction() {
+                // Get params
+                const params = []
+                paramNames.forEach(name => {
+                    const input = document.getElementById(`${name}-input`);
+                    params.push(input.value);
+                });
+
+                // Execute function
+                const outputs = pipeFunction(...params);
+
+                // Update outputs
+                for (let name in outputs) {
+                    let output = document.getElementById(`${name}-output`);
+                    output.innerText = outputs[name];
+                }
+            }
+
+            // Add input
+            function addInput(name) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = name;
+                input.id = `${name}-input`;
+                input.addEventListener('input', executeFunction);
+                inputsDiv.appendChild(input);
+                return input
+            }
+
+            // Add output
+            function addOutput(name) {
+                const output = document.createElement('span');
+                output.id = `${name}-output`;
+                const label = document.createElement('label');
+                label.className = "output-label"
+                label.innerText = `${name}: `;
+                const div = document.createElement('div');
+                div.appendChild(label);
+                div.appendChild(output);
+                outputsDiv.appendChild(div);
+                return output;
+            }
+
+            // https://stackoverflow.com/questions/1007981/how-to-get-function-parameter-names-values-dynamically
+            const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+            const ARGUMENT_NAMES = /([^\s,]+)/g;
+            /**
+             * @return {string[]}
+             */
+            function getParamNames(functionString) {
+                const fnStr = functionString.replace(STRIP_COMMENTS, '');
+                let result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+                if(result === null)
+                    result = [];
+                return result;
+            }
+
+            /**
+             * A simple hash function
+             * 
+             * https://stackoverflow.com/a/52171480/3163120
+             * @param {string} str
+             * @returns {number}
+             */
+            function cyrb53(str, seed = 0) {
+                let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+                for (let i = 0, ch; i < str.length; i++) {
+                    ch = str.charCodeAt(i);
+                    h1 = Math.imul(h1 ^ ch, 2654435761);
+                    h2 = Math.imul(h2 ^ ch, 1597334677);
+                }
+                h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
+                h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
+                return 4294967296 * (2097151 & h2) + (h1>>>0);
+            };
+
+            function onEditorChange() {
+                const functionText = editor.getValue();
+                paramNames = getParamNames(functionText);
+
+                // Extract input's value and add any missing input
+                const params = []
+                paramNames.forEach(name => {
+                    let input = document.getElementById(`${name}-input`);
+                    if(input){
+                        params.push(input.value);
+                        return;
+                    }
+                    input = addInput(name);
+                    params.push(input.value);
+                });
+
+                // Remove any unused input
+                for (input of inputsDiv.children){
+                    if(!paramNames.some(name => name === input.id.split('-')[0])){
+                        input.remove();
+                    }
+                };
+
+                // Evaluate and execute function
+                let outputs;
+                try {
+                    pipeFunction = eval(functionText);
+                    outputs = pipeFunction(...params);
+                } catch (error) {
+                    window.location.hash = "";
+                    errorDiv.style.visibility = 'visible';
+                    errorDiv.innerText = `${error.message} ─ line: ${error.lineNumber}`;
+                    console.error(error);
+                    return
+                }
+
+                // Function is valid and executed succesfully
+                {
+                    window.location.hash = cyrb53(functionText);
+                    errorDiv.style.visibility = 'hidden';
+                }
+
+                // Update outputs and add any missing output
+                for (let name in outputs) {
+                    let output = document.getElementById(`${name}-output`);
+                    if(!output) output = addOutput(name);
+                    output.innerText = outputs[name];
+                }
+
+                // Remove any unused output
+                for (outputDiv of outputsDiv.children){
+                    const output = outputDiv.querySelector("span");
+                    if(!Object.keys(outputs).some(name => name === output.id.split('-')[0])){
+                        outputDiv.remove();
+                    }
+                };
+            };
+        </script>
     </body>
 </html>
