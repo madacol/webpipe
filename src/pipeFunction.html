@@ -16,24 +16,32 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs/loader.js"></script>
         <script>
             let editor;
-            // Load monaco
-            require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs' } });
-            require(['vs/editor/editor.main'], function () {
-                // Initialize the editor
-                editor = monaco.editor.create(document.getElementById('editor'), {
-                    value: `(inputText) => {
+            let wasHashAlreadySaved = false;
+            {
+                const savedFunctionText = localStorage.getItem(window.location.hash.slice(1));
+                wasHashAlreadySaved = savedFunctionText !== null;
+                const functionText = wasHashAlreadySaved
+                    ? savedFunctionText
+                    : `(inputText) => {
     return {
         reversedText: inputText.split('').reverse().join(''),
     }
-}`,
-                    language: 'javascript',
-                    theme: 'vs-dark',
-                    scrollBeyondLastLine: false,
+}`;
+                // Load monaco
+                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs' } });
+                require(['vs/editor/editor.main'], function () {
+                    // Initialize the editor
+                    editor = monaco.editor.create(document.getElementById('editor'), {
+                        value: functionText,
+                        language: 'javascript',
+                        theme: 'vs-dark',
+                        scrollBeyondLastLine: false,
+                    });
+                    // Update the function when the editor changes
+                    editor.onDidChangeModelContent(onEditorChange);
+                    onEditorChange()
                 });
-                // Update the function when the editor changes
-                editor.onDidChangeModelContent(onEditorChange);
-                onEditorChange()
-            });
+            }
         </script>
         <style>
             body {
@@ -164,7 +172,8 @@
                 }
                 h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
                 h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
-                return 4294967296 * (2097151 & h2) + (h1>>>0);
+                const number = 4294967296 * (2097151 & h2) + (h1>>>0);
+                return number.toString(36);
             };
 
             function onEditorChange() {
@@ -196,7 +205,6 @@
                     pipeFunction = eval(functionText);
                     outputs = pipeFunction(...params);
                 } catch (error) {
-                    window.location.hash = "";
                     errorDiv.style.visibility = 'visible';
                     errorDiv.innerText = `${error.message} ─ line:${error.lineNumber}:${error.columnNumber}`;
                     console.error(error);
@@ -205,7 +213,16 @@
 
                 // Function is valid and executed succesfully
                 {
-                    window.location.hash = cyrb53(functionText);
+                    const oldHash = window.location.hash.slice(1);
+                    const newHash = cyrb53(functionText)
+                    if (oldHash !== newHash) {
+                        // TODO: before removing, make sure hash is not used by another instance of this page
+                        // Impossible to do this correctly in this context
+                        if (!wasHashAlreadySaved) localStorage.removeItem(oldHash);
+                        wasHashAlreadySaved = localStorage.getItem(newHash) !== null;
+                        localStorage.setItem(newHash, functionText);
+                        window.location.hash = newHash;
+                    }
                     errorDiv.style.visibility = 'hidden';
                 }
 
