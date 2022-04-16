@@ -198,7 +198,7 @@
                 } catch (error) {
                     window.location.hash = "";
                     errorDiv.style.visibility = 'visible';
-                    errorDiv.innerText = `${error.message} ─ line: ${error.lineNumber}`;
+                    errorDiv.innerText = `${error.message} ─ line:${error.lineNumber}:${error.columnNumber}`;
                     console.error(error);
                     return
                 }
