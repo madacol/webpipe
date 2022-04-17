@@ -33,3 +33,5 @@ const classRegex = /\.[a-zA-Z0-9\-_]+/.source
 const attrRegex = /\[[a-zA-Z0-9\-_]+(?:='.+?')?\]/.source
 const pseudoClassRegex = /\:[a-z\-]+(?:\([^\)]+\))?/.source
 export const anySelectorRegex = new RegExp(`${tagRegex}|${idRegex}|${classRegex}|${attrRegex}|${pseudoClassRegex}`,'g')
+
+export const isObjectEmpty = (obj) => Object.keys(obj).length === 0

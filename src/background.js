@@ -1,4 +1,4 @@
-import { sendAttachSignal, sendToActiveTab } from "./utils"
+import { isObjectEmpty, sendAttachSignal } from "./utils"
 
 /**
  * Possible attributes of an observer
@@ -38,29 +38,27 @@ import { sendAttachSignal, sendToActiveTab } from "./utils"
  * 
  * @type {Observers}
  * */
-const observers = {}
 
-// make a reference in `window` to share with popup
-window.observers = observers
 
-function registerObserver(observer) {
+async function registerObserver(observer) {
     const id = `${observer.tab.id}_${observer.idx}`
 
-    if (observers[id]) return console.error(`observer ${id} already exist`);
+    if (!isObjectEmpty(await browser.storage.local.get(id))) return console.error(`observer ${id} already exist`);
 
-    observers[id] = {
+    await browser.storage.local.set({ [id]: {
         ...observer,
         pipes: []
-    }
+    } })
 }
-function updateObserver(observer) {
+
+async function updateObserver(observer) {
     const id = `${observer.tab.id}_${observer.idx}`
 
     // Update existing observer
-    observers[id].textContent = observer.textContent
+    const {[id]: oldObserver} = await browser.storage.local.get(id)
 
     //send updates to inputs
-    observers[id].pipes.forEach(({idx, tabId}) => {
+    oldObserver.pipes.forEach(({idx, tabId}) => {
         const payload = {
             action: "update",
             textContent: observer.textContent,
@@ -68,19 +66,19 @@ function updateObserver(observer) {
         }
         browser.tabs.sendMessage(tabId, payload)
     });
-    // send update signal to popup
-    browser.runtime.sendMessage(payload)
-
+    await browser.storage.local.set({ [id]: { ...oldObserver, ...observer } })
 }
 
-function attachInput(tabId, {attach, observer}) {
+async function attachInput(tabId, {attach, observer}) {
     const id = `${observer.tab.id}_${observer.idx}`
-    observers[id].pipes.push({tabId, ...attach})
+    const {[id]: oldObserver} = await browser.storage.local.get(id)
+    oldObserver.pipes.push({tabId, ...attach})
+    await browser.storage.local.set({ [id]: oldObserver })
 }
 
 let attachingObserver
 
-browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
+browser.runtime.onMessage.addListener(function (payload, sender) {
     switch (payload.action) {
         /**
          * Observe messages

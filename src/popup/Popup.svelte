@@ -9,19 +9,18 @@
     let observers;
     let cssSelector;
 
-    // set `observers` from background.js context
-    browser.runtime.getBackgroundPage().then(window => {
-        observers = window.observers
-        cssSelector = window.cssSelector
+    // set `cssSelector` from background.js context
+    browser.runtime.getBackgroundPage().then(window => cssSelector = window.cssSelector)
+
+    // set `observers` from storage
+    browser.storage.local.get().then(storage => observers = storage)
+
+    // Update `observers` everytime an observer updates
+    browser.storage.onChanged.addListener(async (changes, areaName) => {
+        if (areaName !== "local") return
+        observers = (await browser.storage.local.get())
     })
-    // mark `observers` as "dirty" everytime an update arrives
-    browser.runtime.onMessage.addListener(function (payload, sender, sendResponse) {
-        switch (payload.action) {
-            case "update":
-                observers = observers // this tells svelte to mark it as dirty and force an update
-                break;
-        }
-    })
+
     function onChangeSelector(observer) {
         return ()=>browser.tabs.sendMessage(
             observer.tab.id,
