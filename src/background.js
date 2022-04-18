@@ -1,4 +1,4 @@
-import { isObjectEmpty, sendAttachSignal } from "./utils"
+import { sendAttachSignal } from "./utils"
 
 /**
  * Possible attributes of an observer
@@ -43,19 +43,16 @@ import { isObjectEmpty, sendAttachSignal } from "./utils"
 async function registerObserver(observer) {
     const id = `${observer.tab.id}_${observer.idx}`
 
-    if (!isObjectEmpty(await browser.storage.local.get(id))) return console.error(`observer ${id} already exist`);
+    if ((await browser.storage.local.get(id))[id] !== undefined) return console.error(`observer ${id} already exist`);
 
-    await browser.storage.local.set({ [id]: {
-        ...observer,
-        pipes: []
-    } })
+    await browser.storage.local.set({ [id]: observer })
 }
 
 async function updateObserver(observer) {
     const id = `${observer.tab.id}_${observer.idx}`
 
     // Update existing observer
-    const {[id]: oldObserver} = await browser.storage.local.get(id)
+    const oldObserver = (await browser.storage.local.get(id))[id]
 
     //send updates to inputs
     oldObserver.pipes.forEach(({idx, tabId}) => {
@@ -90,7 +87,8 @@ browser.runtime.onMessage.addListener(function (payload, sender) {
                     id: sender.tab.id,
                     url: sender.tab.url,
                     title: sender.tab.title,
-                }
+                },
+                pipes: []
             }
             registerObserver(observer)
             attachingObserver = () => sendAttachSignal(observer)
