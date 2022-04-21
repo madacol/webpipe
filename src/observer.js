@@ -76,6 +76,21 @@ export async function observe() {
     observeNode(idx)
 }
 
+export async function restoreObserver({cssSelector, oldId}) {
+    const idx = observers.push({cssSelector}) - 1
+    const createPayload = {
+        action: "restore",
+        observer: {
+            idx,
+            textContent: null,
+            cssSelector,
+        },
+        oldId,
+    }
+    await browser.runtime.sendMessage(createPayload)
+    observeNode(idx)
+}
+
 export function updateSelector({cssSelector, idx}) {
     observers[idx].cssSelector = cssSelector
 }

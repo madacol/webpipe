@@ -20,6 +20,7 @@
         "<all_urls>",
         "activeTab",
         "tabs",
-        "storage"
+        "storage",
+        "webNavigation"
     ]
 }

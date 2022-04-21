@@ -89,3 +89,20 @@ export async function attach({observer}) {
     browser.runtime.sendMessage(payload)
     update({textContent: observer.textContent, idx})
 }
+
+export async function restoreAttach({observer, cssSelector, oldIdx, oldTabId}) {
+    const node = getNodeFromSelector(cssSelector)
+    const idx = elementsAttached.push({cssSelector, node}) - 1
+    const payload = {
+        action: "restoreAttach",
+        observer,
+        attach: {
+            idx,
+            cssSelector,
+            oldIdx,
+            oldTabId,
+        },
+    }
+    browser.runtime.sendMessage(payload)
+    update({textContent: observer.textContent, idx})
+}

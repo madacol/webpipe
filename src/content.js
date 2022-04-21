@@ -1,6 +1,6 @@
-import { attach, elementsAttached, update } from "./attacher";
+import { attach, elementsAttached, restoreAttach, update } from "./attacher";
 import { elementPickerConstroller } from "./element-picker";
-import { getSelector, observe, observers, updateSelector } from "./observer";
+import { getSelector, observe, restoreObserver, observers, updateSelector } from "./observer";
 
 function onMessage (payload) {
 
@@ -8,6 +8,10 @@ function onMessage (payload) {
 
         case "observeMode":
             observe()
+            break;
+
+        case "restoreObserver":
+            restoreObserver(payload)
             break;
 
         case "updateSelector":
@@ -20,6 +24,10 @@ function onMessage (payload) {
 
         case "attachMode":
             attach(payload)
+            break;
+
+        case "restoreAttach":
+            restoreAttach(payload)
             break;
 
         case "update":
