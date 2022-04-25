@@ -41,28 +41,40 @@ import { sendAttachSignal, sendToTab } from "./utils"
  * @type {Observers}
  */
 
+/** @type {{number: Promise<number>}} */
+const tabsRestoredPromise = {}
 /**
  * Tries to find an opened tab with the given url,
  * and if it's not found, creates a new tab with the given url
  * it waits for tab to load completely
- * @param {string} url 
+ * @param {number} tabId
+ * @param {string} url
  */
 async function getTabId(tabId, url) {
-    return new Promise(async (resolve, reject) => {
+    // if tab has been restored before, return its id
+    if (tabsRestoredPromise[tabId] !== undefined) {
+        console.log(`tab ${tabId} is restoring, or was restored`)
+        return await tabsRestoredPromise[tabId]
+    }
+
+    tabsRestoredPromise[tabId] = new Promise(async (resolve, reject) => {
 
         // Check if tab(id) is still open with the same url
         const tab = await browser.tabs.get(tabId).catch(() => ({}))
         if (tab.url === url) {
             resolve(tab.id)
+            console.log(`tab ${tabId} is still open with the same url`)
             return
         }
 
         // Check if url is open but on a different tab
-        const [_, domainWithoutPort] = url.match(/^(.+?:\/\/[^/:]+)(?::\d+)?\//)
+        const domainWithoutPort = url.match(/^(.+?:\/\/[^/:]+)(?::\d+)?\//)[1]
+        console.log(domainWithoutPort);
         const tabs = await browser.tabs.query({ url: domainWithoutPort+"/*" })
         for (const tab of tabs) {
             if (tab.url === url) {
                 resolve(tab.id)
+                console.log(`${tabId}'s url "${url}" is open on a different tab ${tab.id}`)
                 return
             }
         }
@@ -81,63 +93,43 @@ async function getTabId(tabId, url) {
         }
         browser.webNavigation.onCompleted.addListener(onCompleted)
     })
+
+    return await tabsRestoredPromise[tabId]
 }
 
 // Reattach observers from storage
 async function restoreStoredObservers() {
     /** @type {Observers} */
     const observers = await browser.storage.local.get()
-    Object.entries(observers).forEach(async ([id, observer]) => {
+    for (const id in observers) {
+        const observer = observers[id]
         const tabId = await getTabId(observer.tab.id, observer.tab.url)
         const payload = {
             action: "restoreObserver",
-            cssSelector: observer.cssSelector,
-            oldId: id,
+            ...observer,
+            id,
         }
         sendToTab(tabId, payload)
-    })
-}
-restoreStoredObservers()
-
-async function restoreObserver(observer, oldId) {
-    /** @type {Observer} */
-    const oldObserver = (await browser.storage.local.get(oldId))[oldId]
-    observer.pipes = oldObserver.pipes
-
-    const id = `${observer.tab.id}_${observer.idx}`
-    await browser.storage.local.set({ [id]: observer })
-    if (id !== oldId) browser.storage.local.remove(oldId)
-
-    // restore attachers
-    const pipes = observer.pipes
-    delete observer.pipes
-    pipes.forEach(async ({tabId, url, idx, cssSelector}) => {
-        const payload = {
-            action: "restoreAttach",
-            observer,
-            oldIdx: idx,
-            oldTabId: tabId,
-            cssSelector
+        for (const pipe of observer.pipes) {
+            const payload = {
+                action: "restoreAttach",
+                observer,
+                pipe,
+            }
+            const newTabId = await getTabId(pipe.tabId, pipe.url)
+            pipe.tabId = newTabId
+            sendToTab(newTabId, payload)
         }
-        const newTabId = await getTabId(tabId, url)
-        sendToTab(newTabId, payload)
-    })
-}
-
-async function restoreAttacher(tabId, url, {attach, observer}) {
-    const id = `${observer.tab.id}_${observer.idx}`
-    /** @type {Observer} */
-    const storedObserver = (await browser.storage.local.get(id))[id]
-    for (const pipe of storedObserver.pipes) {
-        if (pipe.idx === attach.oldIdx && pipe.tabId === attach.oldTabId) {
-            pipe.idx = attach.idx
-            pipe.tabId = tabId
-            pipe.url = url
-            break
+        // update observer
+        if (observer.tab.id !== tabId) {
+            observer.tab.id = tabId
+            const newId = `${tabId}_${observer.idx}`
+            await browser.storage.local.set({ [newId]: observer })
+            browser.storage.local.remove(id)
         }
     }
-    await browser.storage.local.set({ [id]: storedObserver })
 }
+restoreStoredObservers()
 
 async function registerObserver(observer) {
     const id = `${observer.tab.id}_${observer.idx}`
@@ -170,6 +162,21 @@ async function attachInput(tabId, url, {attach, observer}) {
     const {[observerId]: oldObserver} = await browser.storage.local.get(observerId)
     oldObserver.pipes.push({tabId, url, ...attach})
     await browser.storage.local.set({ [observerId]: oldObserver })
+}
+
+async function updateAttacher(tabId, url) {
+    const observers = await browser.storage.local.get()
+    for (const id in observers) {
+        let willUpdate = false
+        const observer = observers[id]
+        for (const pipe of observer.pipes) {
+            if (pipe.tabId === tabId) {
+                pipe.url = url
+                willUpdate = true
+            }
+        }
+        if (willUpdate) await browser.storage.local.set({ [id]: observer })
+    }
 }
 
 let attachingObserver
@@ -207,18 +214,6 @@ browser.runtime.onMessage.addListener(function (payload, sender) {
             updateObserver(observer)
             break;
         }
-        case "restore": {
-            const observer = {
-                ...payload.observer,
-                tab: {
-                    id: sender.tab.id,
-                    url: sender.tab.url,
-                    title: sender.tab.title,
-                }
-            }
-            restoreObserver(observer, payload.oldId)
-            break;
-        }
         case "assignSelector":
             window.cssSelector = payload.cssSelector
             break;
@@ -228,10 +223,6 @@ browser.runtime.onMessage.addListener(function (payload, sender) {
          */
         case "attach":
             attachInput(sender.tab.id, sender.tab.url, payload)
-            browser.tabs.onActivated.removeListener(attachingObserver)
-            break;
-        case "restoreAttach":
-            restoreAttacher(sender.tab.id, sender.tab.url, payload)
             browser.tabs.onActivated.removeListener(attachingObserver)
             break;
 
