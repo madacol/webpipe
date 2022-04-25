@@ -225,6 +225,9 @@ browser.runtime.onMessage.addListener(function (payload, sender) {
             attachInput(sender.tab.id, sender.tab.url, payload)
             browser.tabs.onActivated.removeListener(attachingObserver)
             break;
+        case "urlChange":
+            updateAttacher(sender.tab.id, sender.tab.url)
+            break;
 
         default:
             console.warn(`message.action: "${payload.action}" unknown`);

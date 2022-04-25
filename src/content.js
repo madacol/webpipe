@@ -41,13 +41,23 @@ function onMessage (payload) {
 
 }
 
-function onVisibility(event) {
+function onUrlChange() {
+    browser.runtime.sendMessage({action: "urlChange"})
+}
+
+function stopBlur(event) {
     event.stopImmediatePropagation()
+}
+
+function onVisibility(event) {
     if (document.visibilityState === 'hidden') {
+        event.stopImmediatePropagation()
         elementPickerConstroller.abort()
         if (elementsAttached.length === 0 && observers.length === 0) {
             browser.runtime.onMessage.removeListener(onMessage)
             window.removeEventListener("visibilitychange", onVisibility, true)
+            window.removeEventListener("blur", stopBlur, true)
+            window.removeEventListener("hashchange", onUrlChange, true)
         }
     }
 };
@@ -55,4 +65,6 @@ function onVisibility(event) {
 export default ()=>{
     browser.runtime.onMessage.addListener(onMessage);
     window.addEventListener("visibilitychange", onVisibility, true);
+    window.addEventListener("blur", stopBlur, true);
+    window.addEventListener("hashchange", onUrlChange, true)
 }
