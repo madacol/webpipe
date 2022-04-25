@@ -24,19 +24,13 @@ export async function update({textContent, idx}) {
     /**
      * Find the correct node to update
      */
-    let node;
-    {
-        if (!elementsAttached[idx]) return console.error(`Does not exist elementsAttached with idx ${idx}`)
+    if (!elementsAttached[idx]) return console.error(`Does not exist elementsAttached with idx ${idx}`)
 
-        const {cssSelector, node: savedNode} = elementsAttached[idx]
+    const {cssSelector} = elementsAttached[idx]
+    const node = getNodeFromSelector(cssSelector)
 
-        // If savedNode is still inserted in the DOM, use it, otherwise find it with the selector
-        node = document.contains(savedNode)
-            ? savedNode
-            : getNodeFromSelector(cssSelector)
+    if (!node) return console.error(`Couldn't find node with the selector: ${cssSelector}`)
 
-        if (!node) return console.error(`Couldn't find node with the selector: ${cssSelector}`)
-    }
     node.value = textContent
 
     /**
@@ -84,8 +78,8 @@ export async function update({textContent, idx}) {
 }
 
 export async function attach({observer}) {
-    const {node, cssSelector} = await elementPicker("#ffbb0070")
-    const idx = elementsAttached.push({cssSelector, node}) - 1
+    const {cssSelector} = await elementPicker("#ffbb0070")
+    const idx = elementsAttached.push({cssSelector}) - 1
     const payload = {
         action: "attach",
         observer,
