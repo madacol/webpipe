@@ -101,6 +101,7 @@ async function getTabId(tabId, url) {
 async function restoreStoredObservers() {
     /** @type {Observers} */
     const observers = await browser.storage.local.get()
+    await browser.storage.local.clear()
     for (const id in observers) {
         const observer = observers[id]
         const tabId = await getTabId(observer.tab.id, observer.tab.url)
@@ -125,7 +126,6 @@ async function restoreStoredObservers() {
             observer.tab.id = tabId
             const newId = `${tabId}_${observer.idx}`
             await browser.storage.local.set({ [newId]: observer })
-            browser.storage.local.remove(id)
         }
     }
 }
