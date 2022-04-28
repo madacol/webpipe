@@ -104,7 +104,7 @@
             let pipeFunction;
             let paramNames;
 
-            function executeFunction() {
+            async function executeFunction() {
                 // Get params
                 const params = []
                 paramNames.forEach(name => {
@@ -113,7 +113,7 @@
                 });
 
                 // Execute function
-                const outputs = pipeFunction(...params);
+                const outputs = await pipeFunction(...params);
 
                 // Update outputs
                 for (let name in outputs) {
@@ -181,7 +181,7 @@
                 return number.toString(36);
             };
 
-            function onEditorChange() {
+            async function onEditorChange() {
                 const functionText = editor.getValue();
                 paramNames = getParamNames(functionText);
 
@@ -208,7 +208,7 @@
                 let outputs;
                 try {
                     pipeFunction = eval(functionText);
-                    outputs = pipeFunction(...params);
+                    outputs = await pipeFunction(...params);
                 } catch (error) {
                     errorDiv.style.visibility = 'visible';
                     errorDiv.innerText = `${error.message} ─ line:${error.lineNumber}:${error.columnNumber}`;
