@@ -121,12 +121,9 @@ async function restoreStoredObservers() {
             pipe.tabId = newTabId
             sendToTab(newTabId, payload)
         }
-        // update observer
-        if (observer.tab.id !== tabId) {
-            observer.tab.id = tabId
-            const newId = `${tabId}_${observer.idx}`
-            await browser.storage.local.set({ [newId]: observer })
-        }
+        observer.tab.id = tabId
+        const newId = `${tabId}_${observer.idx}`
+        await browser.storage.local.set({ [newId]: observer })
     }
 }
 restoreStoredObservers()
