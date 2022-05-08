@@ -75,11 +75,7 @@
                 wasHashAlreadySaved = savedFunctionText !== null;
                 const functionText = wasHashAlreadySaved
                     ? savedFunctionText
-                    : `(inputText) => {
-    return {
-        reversedText: inputText.split('').reverse().join(''),
-    }
-}`;
+                    : "(inputText) => inputText.split('').reverse().join('')";
                 // Load monaco
                 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs' } });
                 require(['vs/editor/editor.main'], function () {
@@ -112,13 +108,18 @@
                 });
 
                 // Execute function
-                const outputs = await pipeFunction(...params);
+                let outputs = await pipeFunction(...params);
+                if (typeof outputs !== "object") {
+                    outputs = {result: outputs}
+                }
 
                 // Update outputs
                 for (let name in outputs) {
                     let output = document.getElementById(`${name}-output`);
                     output.innerText = outputs[name];
                 }
+
+
             }
 
             // Add input
@@ -213,6 +214,9 @@
                     errorDiv.innerText = `${error.message} ─ line:${error.lineNumber}:${error.columnNumber}`;
                     console.error(error);
                     return
+                }
+                if (typeof outputs !== "object") {
+                    outputs = {result: outputs}
                 }
 
                 // Function is valid and executed succesfully
