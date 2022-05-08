@@ -14,35 +14,6 @@
 <html>
     <head>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs/loader.js"></script>
-        <script>
-            let editor;
-            let wasHashAlreadySaved = false;
-            {
-                const savedFunctionText = localStorage.getItem(window.location.hash.slice(1));
-                wasHashAlreadySaved = savedFunctionText !== null;
-                const functionText = wasHashAlreadySaved
-                    ? savedFunctionText
-                    : `(inputText) => {
-    return {
-        reversedText: inputText.split('').reverse().join(''),
-    }
-}`;
-                // Load monaco
-                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs' } });
-                require(['vs/editor/editor.main'], function () {
-                    // Initialize the editor
-                    editor = monaco.editor.create(document.getElementById('editor'), {
-                        value: functionText,
-                        language: 'javascript',
-                        theme: 'vs-dark',
-                        scrollBeyondLastLine: false,
-                    });
-                    // Update the function when the editor changes
-                    editor.onDidChangeModelContent(onEditorChange);
-                    onEditorChange()
-                });
-            }
-        </script>
         <style>
             body {
                 display: flex;
@@ -97,6 +68,34 @@
             <div id="outputs"></div>
         </div>
         <script>
+            let editor;
+            let wasHashAlreadySaved = false;
+            {
+                const savedFunctionText = localStorage.getItem(window.location.hash.slice(1));
+                wasHashAlreadySaved = savedFunctionText !== null;
+                const functionText = wasHashAlreadySaved
+                    ? savedFunctionText
+                    : `(inputText) => {
+    return {
+        reversedText: inputText.split('').reverse().join(''),
+    }
+}`;
+                // Load monaco
+                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs' } });
+                require(['vs/editor/editor.main'], function () {
+                    // Initialize the editor
+                    editor = monaco.editor.create(document.getElementById('editor'), {
+                        value: functionText,
+                        language: 'javascript',
+                        theme: 'vs-dark',
+                        scrollBeyondLastLine: false,
+                    });
+                    // Update the function when the editor changes
+                    editor.onDidChangeModelContent(onEditorChange);
+                    onEditorChange()
+                });
+            }
+
             const inputsDiv = document.getElementById('inputs');
             const outputsDiv = document.getElementById('outputs');
             const errorDiv = document.getElementById('error');
