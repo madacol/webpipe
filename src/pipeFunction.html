@@ -14,35 +14,6 @@
 <html>
     <head>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs/loader.js"></script>
-        <script>
-            let editor;
-            let wasHashAlreadySaved = false;
-            {
-                const savedFunctionText = localStorage.getItem(window.location.hash.slice(1));
-                wasHashAlreadySaved = savedFunctionText !== null;
-                const functionText = wasHashAlreadySaved
-                    ? savedFunctionText
-                    : `(inputText) => {
-    return {
-        reversedText: inputText.split('').reverse().join(''),
-    }
-}`;
-                // Load monaco
-                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs' } });
-                require(['vs/editor/editor.main'], function () {
-                    // Initialize the editor
-                    editor = monaco.editor.create(document.getElementById('editor'), {
-                        value: functionText,
-                        language: 'javascript',
-                        theme: 'vs-dark',
-                        scrollBeyondLastLine: false,
-                    });
-                    // Update the function when the editor changes
-                    editor.onDidChangeModelContent(onEditorChange);
-                    onEditorChange()
-                });
-            }
-        </script>
         <style>
             body {
                 display: flex;
@@ -72,7 +43,12 @@
                 flex-direction: column;
                 gap: 1em;
             }
-            .output-label {
+            .output {
+                display: grid;
+                grid-gap: 1em;
+                grid-template-columns: min-content 1fr;
+            }
+            .output > label {
                 font-size: 0.75em;
             }
             #error {
@@ -92,6 +68,30 @@
             <div id="outputs"></div>
         </div>
         <script>
+            let editor;
+            let wasHashAlreadySaved = false;
+            {
+                const savedFunctionText = localStorage.getItem(window.location.hash.slice(1));
+                wasHashAlreadySaved = savedFunctionText !== null;
+                const functionText = wasHashAlreadySaved
+                    ? savedFunctionText
+                    : "(inputText) => inputText.split('').reverse().join('')";
+                // Load monaco
+                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs' } });
+                require(['vs/editor/editor.main'], function () {
+                    // Initialize the editor
+                    editor = monaco.editor.create(document.getElementById('editor'), {
+                        value: functionText,
+                        language: 'javascript',
+                        theme: 'vs-dark',
+                        scrollBeyondLastLine: false,
+                    });
+                    // Update the function when the editor changes
+                    editor.onDidChangeModelContent(onEditorChange);
+                    onEditorChange()
+                });
+            }
+
             const inputsDiv = document.getElementById('inputs');
             const outputsDiv = document.getElementById('outputs');
             const errorDiv = document.getElementById('error');
@@ -99,7 +99,7 @@
             let pipeFunction;
             let paramNames;
 
-            function executeFunction() {
+            async function executeFunction() {
                 // Get params
                 const params = []
                 paramNames.forEach(name => {
@@ -108,13 +108,18 @@
                 });
 
                 // Execute function
-                const outputs = pipeFunction(...params);
+                let outputs = await pipeFunction(...params);
+                if (typeof outputs !== "object") {
+                    outputs = {result: outputs}
+                }
 
                 // Update outputs
                 for (let name in outputs) {
                     let output = document.getElementById(`${name}-output`);
                     output.innerText = outputs[name];
                 }
+
+
             }
 
             // Add input
@@ -133,9 +138,9 @@
                 const output = document.createElement('span');
                 output.id = `${name}-output`;
                 const label = document.createElement('label');
-                label.className = "output-label"
                 label.innerText = `${name}: `;
                 const div = document.createElement('div');
+                div.className = "output";
                 div.appendChild(label);
                 div.appendChild(output);
                 outputsDiv.appendChild(div);
@@ -176,7 +181,7 @@
                 return number.toString(36);
             };
 
-            function onEditorChange() {
+            async function onEditorChange() {
                 const functionText = editor.getValue();
                 paramNames = getParamNames(functionText);
 
@@ -203,12 +208,15 @@
                 let outputs;
                 try {
                     pipeFunction = eval(functionText);
-                    outputs = pipeFunction(...params);
+                    outputs = await pipeFunction(...params);
                 } catch (error) {
                     errorDiv.style.visibility = 'visible';
                     errorDiv.innerText = `${error.message} ─ line:${error.lineNumber}:${error.columnNumber}`;
                     console.error(error);
                     return
+                }
+                if (typeof outputs !== "object") {
+                    outputs = {result: outputs}
                 }
 
                 // Function is valid and executed succesfully

@@ -21,39 +21,41 @@ export async function update({textContent, idx}) {
         await pickingPromise;
     } catch (error) {}
 
-    let node;
-    {
-        if (!elementsAttached[idx]) return console.error(`Does not exist elementsAttached with idx ${idx}`)
+    /**
+     * Find the correct node to update
+     */
+    if (!elementsAttached[idx]) return console.error(`Does not exist elementsAttached with idx ${idx}`)
 
-        const {cssSelector, node: savedNode} = elementsAttached[idx]
+    const {cssSelector} = elementsAttached[idx]
+    const node = getNodeFromSelector(cssSelector)
 
-        // If savedNode is still inserted in the DOM, use it, otherwise find it with the selector
-        node = document.contains(savedNode)
-            ? savedNode
-            : getNodeFromSelector(cssSelector)
+    if (!node) return console.error(`Couldn't find node with the selector: ${cssSelector}`)
 
-        if (!node) return console.error(`Couldn't find node with the selector: ${cssSelector}`)
-    }
     node.value = textContent
 
     /**
-     * The following is to make it work for elements used by rich-editors,
-     * fancy state frameworks, contenteditable, blah blah
-     * 
-     * https://github.com/facebook/draft-js/issues/616
+     * Dispatch events to trigger the change
      */
+    node.dispatchEvent(new MouseEvent("mouseover", {bubbles: true}))
+    node.dispatchEvent(new MouseEvent("mousedown", {bubbles: true}))
+    node.dispatchEvent(new MouseEvent("mouseup", {bubbles: true}))
     node.click()
-    // node.dispatchEvent(new MouseEvent("click"))
-    node.dispatchEvent(new KeyboardEvent("keyup"))
-    node.dispatchEvent(new KeyboardEvent("keypress"))
-    node.dispatchEvent(new KeyboardEvent("keydown"))
-    node.dispatchEvent(new InputEvent("input"))
-    node.dispatchEvent(new InputEvent("change"))
-    node.dispatchEvent(new InputEvent("blur"))
+    node.dispatchEvent(new KeyboardEvent("keydown", {bubbles: true}))
+    node.dispatchEvent(new KeyboardEvent("keyup", {bubbles: true}))
+    node.dispatchEvent(new KeyboardEvent("keypress", {bubbles: true}))
     node.dispatchEvent(new ClipboardEvent(
         "paste",
         {dataType: "text/plain", data: textContent}
-    )) // https://github.com/facebook/draft-js/issues/616#issuecomment-426047799
+    , {bubbles: true})) // https://github.com/facebook/draft-js/issues/616#issuecomment-426047799
+    node.dispatchEvent(new InputEvent("input", {bubbles: true}))
+    node.dispatchEvent(new InputEvent("change", {bubbles: true}))
+    node.dispatchEvent(new InputEvent("blur", {bubbles: true}))
+
+    /**
+     * The following is to make it work on some rich-editors
+     * 
+     * https://github.com/facebook/draft-js/issues/616
+     */
 
     if (node.isContentEditable) {
         /**
@@ -76,8 +78,8 @@ export async function update({textContent, idx}) {
 }
 
 export async function attach({observer}) {
-    const {node, cssSelector} = await elementPicker("#ffbb0070")
-    const idx = elementsAttached.push({cssSelector, node}) - 1
+    const {cssSelector} = await elementPicker("#ffbb0070")
+    const idx = elementsAttached.push({cssSelector}) - 1
     const payload = {
         action: "attach",
         observer,
@@ -88,4 +90,12 @@ export async function attach({observer}) {
     }
     browser.runtime.sendMessage(payload)
     update({textContent: observer.textContent, idx})
+}
+
+export async function restoreAttach({observer, pipe: {cssSelector, idx}}) {
+    elementsAttached[idx] = {cssSelector}
+    update({
+        textContent: observer.textContent,
+        idx,
+    })
 }

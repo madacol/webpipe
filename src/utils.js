@@ -1,6 +1,10 @@
 export async function sendToActiveTab(payload) {
     const tabs = await browser.tabs.query({ currentWindow: true, active: true })
     const tabId = tabs[0].id
+    await sendToTab(tabId, payload)
+}
+
+export async function sendToTab(tabId, payload) {
     try {
         await browser.tabs.sendMessage(tabId, payload)
     } catch (error) {

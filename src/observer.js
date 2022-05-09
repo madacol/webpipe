@@ -76,6 +76,11 @@ export async function observe() {
     observeNode(idx)
 }
 
+export async function restoreObserver(observer) {
+    observers[observer.idx] = observer
+    observeNode(observer.idx)
+}
+
 export function updateSelector({cssSelector, idx}) {
     observers[idx].cssSelector = cssSelector
 }

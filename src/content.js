@@ -1,6 +1,6 @@
-import { attach, elementsAttached, update } from "./attacher";
+import { attach, elementsAttached, restoreAttach, update } from "./attacher";
 import { elementPickerConstroller } from "./element-picker";
-import { getSelector, observe, observers, updateSelector } from "./observer";
+import { getSelector, observe, restoreObserver, observers, updateSelector } from "./observer";
 
 function onMessage (payload) {
 
@@ -8,6 +8,10 @@ function onMessage (payload) {
 
         case "observeMode":
             observe()
+            break;
+
+        case "restoreObserver":
+            restoreObserver(payload)
             break;
 
         case "updateSelector":
@@ -22,6 +26,10 @@ function onMessage (payload) {
             attach(payload)
             break;
 
+        case "restoreAttach":
+            restoreAttach(payload)
+            break;
+
         case "update":
             update(payload)
             break;
@@ -33,13 +41,23 @@ function onMessage (payload) {
 
 }
 
-function onVisibility(event) {
+function onUrlChange() {
+    browser.runtime.sendMessage({action: "urlChange"})
+}
+
+function stopBlur(event) {
     event.stopImmediatePropagation()
+}
+
+function onVisibility(event) {
     if (document.visibilityState === 'hidden') {
+        event.stopImmediatePropagation()
         elementPickerConstroller.abort()
         if (elementsAttached.length === 0 && observers.length === 0) {
             browser.runtime.onMessage.removeListener(onMessage)
             window.removeEventListener("visibilitychange", onVisibility, true)
+            window.removeEventListener("blur", stopBlur, true)
+            window.removeEventListener("hashchange", onUrlChange, true)
         }
     }
 };
@@ -47,4 +65,6 @@ function onVisibility(event) {
 export default ()=>{
     browser.runtime.onMessage.addListener(onMessage);
     window.addEventListener("visibilitychange", onVisibility, true);
+    window.addEventListener("blur", stopBlur, true);
+    window.addEventListener("hashchange", onUrlChange, true)
 }
