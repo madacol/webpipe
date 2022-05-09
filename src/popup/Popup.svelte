@@ -33,9 +33,6 @@
     }
 </script>
 <div id="popup">
-    <span>{cssSelector}</span>
-    <button on:click={async ()=>{await sendToActiveTab({action: "getSelector"}); window.close();}}>Get selector</button>
-    |
     <button on:click={async ()=>{await sendToActiveTab({action: "observeMode"}); window.close();}}>Observe</button>
     {#if observers && Object.values(observers).length > 0}
         <section>
