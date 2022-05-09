@@ -33,31 +33,42 @@
     }
 </script>
 <div id="popup">
-    <button on:click={async ()=>{await sendToActiveTab({action: "observeMode"}); window.close();}}>Observe</button>
+    <div>
+        <span>WEBPIPE</span>
+        <span>v1.0</span>
+        <button on:click={async ()=>{await sendToActiveTab({action: "observeMode"}); window.close();}}>Observe</button>
+    </div>
     {#if observers && Object.values(observers).length > 0}
         <section>
             <!-- <div class="observer header"> -->
+                <span class="header">alias</span>
                 <span class="header">selector</span>
-                <span class="header">idx</span>
+                <span class="header">url</span>
                 <span class="header">current text</span>
-                <span class="header">tabId</span>
+                <span class="header"></span>
             <!-- </div> -->
             {#each Object.values(observers) as observer (`${observer.tab.id}_${observer.idx}`)}
                 <!-- <div class="observer"> -->
+                    <span>ejemplo</span>
                     <input
                         bind:value={observer.cssSelector}
                         on:change={onChangeSelector(observer)}
                     />
-                    <span>{`${observer.tab.id}_${observer.idx}`}</span>
-                    <span>{observer.textContent}</span>
+                    <span title={observer.tab.url}>{observer.tab.url}</span>
+                    <span title={observer.textContent}>{observer.textContent}</span>
                     <button on:click={async ()=>{await sendAttachSignal(observer); window.close();}}>attach</button>
-
-                    {#each observer.pipes as pipe}
-                            <span>{pipe.cssSelector}</span>
-                            <span>{pipe.idx}</span>
-                            <span>{pipe.url}</span>
-                            <span>{pipe.tabId}</span>
-                    {/each}
+                    {#if observer.pipes.length > 0}
+                        <div class="pipes">
+                            <span class="header"></span>
+                            <span class="header">url</span>
+                            <span class="header">selector</span>
+                            {#each observer.pipes as pipe}
+                                    <span>delete</span>
+                                    <span title={pipe.url}>{pipe.url}</span>
+                                    <span title={pipe.cssSelector}>{pipe.cssSelector}</span>
+                            {/each}
+                        </div>
+                    {/if}
                 <!-- </div> -->
             {/each}
         </section>
@@ -67,18 +78,30 @@
 <style>
     #popup {
         text-align: right;
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .header{
+        text-align: left;
     }
     section {
         display: grid;
-        grid-template-columns: repeat(4, min-content);
+        grid-template-columns: min-content min-content auto auto min-content;
         column-gap: 0.5em;
         padding: 0.5em;
         margin-top: 0.5em;
         border-top: 1px solid black;
     }
+    .pipes{
+        grid-column: 2 / -1;
+        display: grid;
+        grid-template-columns: min-content auto auto;
+
+    }
     section span {
-        max-height: 3.5em;
+        max-height: 1.5em;
         padding: 0.3em;
-        overflow: auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 </style>
