@@ -49,6 +49,7 @@
             <!-- </div> -->
             {#each Object.values(observers) as observer (`${observer.tab.id}_${observer.idx}`)}
                 <!-- <div class="observer"> -->
+                    <hr>
                     <span>ejemplo</span>
                     <input
                         bind:value={observer.cssSelector}
@@ -62,6 +63,7 @@
                             <span class="header"></span>
                             <span class="header">url</span>
                             <span class="header">selector</span>
+                            <hr>
                             {#each observer.pipes as pipe}
                                     <span>delete</span>
                                     <span title={pipe.url}>{pipe.url}</span>
@@ -79,6 +81,10 @@
     #popup {
         text-align: right;
         font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: rgb(11, 62, 17);
+        margin: 0;
+        padding: 0;
+        color: white;
     }
     .header{
         text-align: left;
@@ -86,7 +92,7 @@
     section {
         display: grid;
         grid-template-columns: min-content min-content auto auto min-content;
-        column-gap: 0.5em;
+        column-gap: 2em;
         padding: 0.5em;
         margin-top: 0.5em;
         border-top: 1px solid black;
@@ -95,7 +101,7 @@
         grid-column: 2 / -1;
         display: grid;
         grid-template-columns: min-content auto auto;
-
+        column-gap: 2em;
     }
     section span {
         max-height: 1.5em;
@@ -103,5 +109,9 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+    hr {
+        grid-column: 1 / -1;
+        width: 100%;
     }
 </style>
