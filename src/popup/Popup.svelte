@@ -33,7 +33,7 @@
     }
 </script>
 <div id="popup">
-    <div>
+    <div class="title">
         <span>WEBPIPE</span>
         <span>v1.0</span>
         <button on:click={async ()=>{await sendToActiveTab({action: "observeMode"}); window.close();}}>Observe</button>
@@ -81,7 +81,7 @@
     #popup {
         text-align: right;
         font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: rgb(11, 62, 17);
+        background-color: #2b2a33;
         margin: 0;
         padding: 0;
         color: white;
@@ -89,13 +89,15 @@
     .header{
         text-align: left;
     }
+    .title{
+        padding: 1em;
+    }
     section {
         display: grid;
         grid-template-columns: min-content min-content auto auto min-content;
         column-gap: 2em;
         padding: 0.5em;
-        margin-top: 0.5em;
-        border-top: 1px solid black;
+        border-top: 1px solid white;
     }
     .pipes{
         grid-column: 2 / -1;
