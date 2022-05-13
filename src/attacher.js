@@ -40,6 +40,7 @@ export async function update({textContent, idx}) {
     node.dispatchEvent(new MouseEvent("mousedown", {bubbles: true}))
     node.dispatchEvent(new MouseEvent("mouseup", {bubbles: true}))
     node.click()
+    node.dispatchEvent(new InputEvent("focus", {bubbles: true}))
     node.dispatchEvent(new KeyboardEvent("keydown", {bubbles: true}))
     node.dispatchEvent(new KeyboardEvent("keyup", {bubbles: true}))
     node.dispatchEvent(new KeyboardEvent("keypress", {bubbles: true}))
