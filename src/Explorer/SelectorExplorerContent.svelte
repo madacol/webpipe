@@ -15,7 +15,7 @@ import { createEventDispatcher } from "svelte";
     let hasCommited = false;
     $: {
         const cssSelector = getCssSelector(hoveringNode, {
-            blacklist: [".element-picking", "[style=*"],
+            blacklist: [".element-picking"],
             maxCombinations: 100,
             root: document.querySelector(hasCommited ? commitedSelector : "body"),
         })
@@ -84,7 +84,7 @@ import { createEventDispatcher } from "svelte";
 
     // attributes
     $: attributes = Object.values(hoveringNode.attributes)
-                          .filter(attr=>!["class","style", "id"].includes(attr.name))
+                          .filter(attr=>![ "class", "id"].includes(attr.name))
                           .map(attr=>`[${attr.name}='${attr.value}']`)
 
     let pseudoClasses = [];
