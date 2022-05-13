@@ -175,7 +175,7 @@ import { createEventDispatcher } from "svelte";
         </div>
         <hr>
         <div class="modifiers-webpipe">
-            <section class="inspectorTree">
+            <section class="inspector-tree-webpipe">
                 <InspectorElement bind:hoveringNode element={hoveringNode.parentElement?.parentElement}/>
                 <InspectorElement bind:hoveringNode element={hoveringNode.parentElement}/>
                 <InspectorElement bind:hoveringNode element={hoveringNode}/>
@@ -195,7 +195,7 @@ import { createEventDispatcher } from "svelte";
                     />
                 {/if}
                 <hr>
-                <div class="classes">
+                <div class="classes-webpipe">
                     {#each classes as classString }
                         <CheckboxToggle
                             label={classString}
@@ -205,7 +205,7 @@ import { createEventDispatcher } from "svelte";
                     {/each}
                 </div>
                 <hr>
-                <div class="attributes">
+                <div class="attributes-webpipe">
                     {#each attributes as selector }
                         <CheckboxToggle
                             label={selector}
@@ -215,7 +215,7 @@ import { createEventDispatcher } from "svelte";
                     {/each}
                 </div>
                 <hr>
-                <div class="pseudo-classes">
+                <div class="pseudo-classes-webpipe">
                     {#each pseudoClasses as pseudoClass }
                         <CheckboxToggle
                             label={pseudoClass}
@@ -253,7 +253,7 @@ import { createEventDispatcher } from "svelte";
         overflow: clip auto;
     }
     hr {width: 90%;}
-    .inspectorTree {
+    .inspector-tree-webpipe {
         display: flex;
         flex-direction: column;
         background-color: rgb(36, 36, 36);
@@ -264,7 +264,7 @@ import { createEventDispatcher } from "svelte";
         color: black;
         background-color: white;
     }
-    .classes, .attributes, .pseudo-classes {
+    .classes-webpipe, .attributes-webpipe, .pseudo-classes-webpipe {
         display: flex;
         flex-direction: column;
         align-items: start;
