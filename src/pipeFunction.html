@@ -117,7 +117,15 @@
                 });
 
                 // Execute function
-                let outputs = await pipeFunction(...params);
+                let outputs;
+                try {
+                    outputs = await pipeFunction(...params);
+                } catch (error) {
+                    errorDiv.style.visibility = 'visible';
+                    errorDiv.innerText = `Execution error ─ ${error.message} ─ line:${error.lineNumber}:${error.columnNumber}`;
+                    console.error(error);
+                    return
+                }
 
                 if (outputs === undefined) return
 
