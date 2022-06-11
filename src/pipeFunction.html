@@ -188,10 +188,31 @@
             };
 
             async function onEditorChange() {
+
+                /************
+                 *   EVAL   *
+                 ************/
+
                 const functionText = editor.getValue();
-                paramNames = getParamNames(functionText);
+
+                // Evaluate and execute function
+                let outputs;
+                try {
+                    pipeFunction = eval(functionText);
+                } catch (error) {
+                    errorDiv.style.visibility = 'visible';
+                    errorDiv.innerText = `Eval error ─ ${error.message} ─ line:${error.lineNumber}:${error.columnNumber}`;
+                    console.error(error);
+                    return
+                }
+                // Function is valid
+
+                /**************
+                 *   INPUTS   *
+                 **************/
 
                 // Extract input's value and add any missing input
+                paramNames = getParamNames(pipeFunction.toString());
                 const params = []
                 paramNames.forEach(name => {
                     let input = document.getElementById(`${name}-input`);
@@ -210,19 +231,22 @@
                     }
                 };
 
-                // Evaluate and execute function
-                let outputs;
+                /*****************
+                 *   EXECUTION   *
+                 *****************/
                 try {
-                    pipeFunction = eval(functionText);
                     outputs = await pipeFunction(...params);
                 } catch (error) {
                     errorDiv.style.visibility = 'visible';
-                    errorDiv.innerText = `${error.message} ─ line:${error.lineNumber}:${error.columnNumber}`;
+                    errorDiv.innerText = `Execution error ─ ${error.message} ─ line:${error.lineNumber}:${error.columnNumber}`;
                     console.error(error);
                     return
                 }
+                // Function executed succesfully
 
-                // Function is valid and executed succesfully
+                /*************
+                 *    URL    *
+                 *************/
 
                 { // Update URL
                     const oldHash = window.location.hash.slice(1);
@@ -237,6 +261,10 @@
                     }
                     errorDiv.style.visibility = 'hidden';
                 }
+
+                /*************
+                 *  OUTPUTS  *
+                 *************/
 
                 // Update outputs structure
 
