@@ -15,7 +15,7 @@ function observeNode(idx) {
             action: "update",
             observer: {
                 idx,
-                textContent: text
+                outerText: text
             }
         }
         browser.runtime.sendMessage(updatePayload)
@@ -26,7 +26,7 @@ function observeNode(idx) {
         const node = getNodeFromSelector(observers[idx].cssSelector)
         const text = (node.tagName === "INPUT" || node.tagName === "TEXTAREA")
             ? node.value
-            : node.textContent
+            : node.outerText
 
         if (oldText === text) return // no change
 
@@ -52,7 +52,7 @@ function observeNode(idx) {
     //     }, 100)
     //     observers[idx].stop = ()=>clearInterval(intervalId)
     // } else {
-    //     const observer = new MutationObserver(()=>sendUpdate(node.textContent))
+    //     const observer = new MutationObserver(()=>sendUpdate(node.outerText))
     //     observer.observe(node, { childList: true, subtree: true, characterData: true })
     //     observers[idx].observer = observer
     //     observers[idx].stop = observer.disconnect
@@ -66,7 +66,7 @@ export async function observe() {
         action: "create",
         observer: {
             idx,
-            textContent: (node.value || node.textContent),
+            outerText: (node.value || node.outerText),
             cssSelector
         }
     }

@@ -56,7 +56,7 @@
                         on:change={onChangeSelector(observer)}
                     />
                     <span title={observer.tab.url}>{observer.tab.url}</span>
-                    <span title={observer.textContent}>{observer.textContent}</span>
+                    <span title={observer.outerText}>{observer.outerText}</span>
                     <button on:click={async ()=>{await sendAttachSignal(observer); window.close();}}>attach</button>
                     {#if observer.pipes.length > 0}
                         <div class="pipes">

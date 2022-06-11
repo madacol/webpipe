@@ -4,7 +4,7 @@ import { sendAttachSignal, sendToTab } from "./utils"
  * Possible attributes of an observer
  * @typedef {{
  *   idx: number,
- *   textContent: string,
+ *   outerText: string,
  *   cssSelector: string,
  *   tab: {
  *     id: number,
@@ -22,7 +22,7 @@ import { sendAttachSignal, sendToTab } from "./utils"
  * 
  * @typedef {Object.<string, {
  *   idx: number,
- *   textContent: string,
+ *   outerText: string,
  *   cssSelector: string,
  *   tab: {
  *     id: number,
@@ -146,7 +146,7 @@ async function updateObserver(observer) {
     oldObserver.pipes.forEach(({idx, tabId}) => {
         const payload = {
             action: "update",
-            textContent: observer.textContent,
+            outerText: observer.outerText,
             idx
         }
         browser.tabs.sendMessage(tabId, payload)

@@ -11,7 +11,7 @@ function selectNodeText(node) {
     selection.addRange(range);
 }
 
-export async function update({textContent, idx}) {
+export async function update({outerText, idx}) {
 
     /**
      * If an element is being picked, pause update until picking is finished
@@ -31,7 +31,7 @@ export async function update({textContent, idx}) {
 
     if (!node) return console.error(`Couldn't find node with the selector: ${cssSelector}`)
 
-    node.value = textContent
+    node.value = outerText
 
     /**
      * Dispatch events to trigger the change
@@ -44,11 +44,20 @@ export async function update({textContent, idx}) {
     node.dispatchEvent(new KeyboardEvent("keydown", {bubbles: true}))
     node.dispatchEvent(new KeyboardEvent("keyup", {bubbles: true}))
     node.dispatchEvent(new KeyboardEvent("keypress", {bubbles: true}))
-    node.dispatchEvent(new ClipboardEvent(
-        "paste",
-        {dataType: "text/plain", data: textContent}
-    , {bubbles: true})) // https://github.com/facebook/draft-js/issues/616#issuecomment-426047799
+
+    const data = new DataTransfer()
+    data.setData(
+        'text/html',
+        outerText
+    )
+    node.dispatchEvent(new ClipboardEvent( "paste", {
+        dataType: "text/plain",
+        data: outerText,
+        bubbles: true,
+        clipboardData: data
+    })) // https://github.com/facebook/draft-js/issues/616#issuecomment-426047799
     node.dispatchEvent(new InputEvent("input", {bubbles: true}))
+    node.dispatchEvent(new InputEvent("beforeinput", {inputType: "inserting", data: outerText, bubbles: true}))
     node.dispatchEvent(new InputEvent("change", {bubbles: true}))
     node.dispatchEvent(new InputEvent("blur", {bubbles: true}))
 
@@ -74,7 +83,7 @@ export async function update({textContent, idx}) {
          * Really sorry for this rudeness but, Here we go! <3
          */
         selectNodeText(node)
-        document.execCommand('insertText', false, textContent)
+        document.execCommand('insertText', false, outerText)
     }
 }
 
@@ -90,13 +99,13 @@ export async function attach({observer}) {
         },
     }
     browser.runtime.sendMessage(payload)
-    update({textContent: observer.textContent, idx})
+    update({outerText: observer.outerText, idx})
 }
 
 export async function restoreAttach({observer, pipe: {cssSelector, idx}}) {
     elementsAttached[idx] = {cssSelector}
     update({
-        textContent: observer.textContent,
+        outerText: observer.outerText,
         idx,
     })
 }
