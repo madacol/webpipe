@@ -10,7 +10,7 @@
     The function (the editor's inner text) is going to be evaluated every time any input changes,
     and the result shown in the right section
 -->
-
+<!DOCTYPE html>
 <html>
     <head>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.19.0/min/vs/loader.js"></script>
@@ -99,6 +99,15 @@
             let pipeFunction;
             let paramNames;
 
+            function updateOutputs(outputs) {
+                // Update outputs and add any missing output
+                for (let name in outputs) {
+                    let output = document.getElementById(`${name}-output`);
+                    if(!output) output = addOutput(name);
+                    output.innerText = outputs[name];
+                }
+            }
+
             async function executeFunction() {
                 // Get params
                 const params = []
@@ -109,22 +118,19 @@
 
                 // Execute function
                 let outputs = await pipeFunction(...params);
+
+                if (outputs === undefined) return
+
                 if (typeof outputs !== "object") {
                     outputs = {result: outputs}
                 }
 
-                // Update outputs
-                for (let name in outputs) {
-                    let output = document.getElementById(`${name}-output`);
-                    output.innerText = outputs[name];
-                }
-
-
+                updateOutputs(outputs)
             }
 
             // Add input
             function addInput(name) {
-                const input = document.createElement('input');
+                const input = document.createElement('textarea');
                 input.type = 'text';
                 input.placeholder = name;
                 input.id = `${name}-input`;
@@ -215,12 +221,10 @@
                     console.error(error);
                     return
                 }
-                if (typeof outputs !== "object") {
-                    outputs = {result: outputs}
-                }
 
                 // Function is valid and executed succesfully
-                {
+
+                { // Update URL
                     const oldHash = window.location.hash.slice(1);
                     const newHash = cyrb53(functionText)
                     if (oldHash !== newHash) {
@@ -234,12 +238,14 @@
                     errorDiv.style.visibility = 'hidden';
                 }
 
-                // Update outputs and add any missing output
-                for (let name in outputs) {
-                    let output = document.getElementById(`${name}-output`);
-                    if(!output) output = addOutput(name);
-                    output.innerText = outputs[name];
+                // Update outputs structure
+
+                if (outputs === undefined) return
+
+                if (typeof outputs !== "object") {
+                    outputs = {result: outputs}
                 }
+                updateOutputs(outputs)
 
                 // Remove any unused output
                 for (outputDiv of outputsDiv.children){
